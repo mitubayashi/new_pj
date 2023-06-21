@@ -1,0 +1,369 @@
+body{
+    font-family: '???C???I', 'Meiryo', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    margin: 0;
+}
+
+.body_area
+{
+    margin-left: 15px;
+}
+
+.form_text{
+    box-shadow: 0 0 0 1px #ccc inset;
+    height: 29px;
+    border-radius: 4px;
+    border: none;
+}
+
+.disabled{
+    pointer-events: none;
+    background: #eae9e9;
+}
+
+.form_text:focus{
+    outline: 0;
+    box-shadow: 0 0 0 1px rgb(33, 150, 243) inset;
+}
+
+.login_button{
+    box-shadow: 0 0 0 1px rgb(68,114,196) inset;
+    color: rgb(255,255,255);
+    font-size: 15px;
+    height: 2.3em;
+    width: 250px;
+    margin: 0 8px;
+    background-color: rgb(68,114,196);
+    border-radius: 4px;
+    border: none;
+    text-align: center;
+}
+
+.login_button:hover{
+    background-color: rgb(255,255,255);
+    color: rgb(68,114,196);
+}
+
+.login_title{
+    font-size: 20px;
+    color: rgb(82,82,82);
+}
+
+nav
+{
+    text-align: center;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
+}
+
+nav ul
+{
+    list-style: none;
+    display: flex;
+/*    justify-content: center;*/
+    padding: 0;
+    margin: 0;
+    background: linear-gradient(rgb(68,114,196),rgb(39,79,169));
+    border: 1px solid rgb(40,40,40);
+}
+
+nav ul ul
+{
+    display: block;
+}
+
+nav ul li
+{
+    position: relative;
+    width: 180px;
+}
+
+nav ul li a
+{
+    font-size: 15px;
+    display: block;
+    text-decoration: none;
+    color: #ffffff;
+    border: 1px solid rgb(39,79,169);
+    padding:14px 14px;
+    transition:all .3s;
+}
+
+nav li.has-child
+{
+    height: 52px;
+}
+
+nav li.has-child ul
+{
+
+    position: absolute;
+    left:0;
+    top:54px;
+    z-index: 4;
+    background:none;
+    width:180px;
+    visibility: hidden;
+    opacity: 0;
+    transition: all .3s;
+    border: none;
+}
+
+nav li.has-child:hover > ul,
+nav li.has-child ul li:hover > ul,
+nav li.has-child:active > ul,
+nav li.has-child ul li:active > ul
+{
+    visibility: visible;
+    opacity: 1;
+}
+
+nav li.has-child:hover{
+    background: rgb(39,79,169);
+}
+
+input.menu
+{
+    background: rgb(68,114,196);
+    color: #fff;
+    font-size: 14px;
+    border: 1px solid rgb(39,79,169);
+    margin: 0 0 1px 0px;
+    height: 40px;
+    width: 180px;
+}
+input.menu:hover
+{
+    background: rgb(39,79,169);
+}
+
+.title
+{
+    font-size: 18px;
+    color: rgb(255 255 255);
+    background: linear-gradient(rgb(64,64,64),rgb(40,40,40));
+    margin-top: 53px;
+    margin-bottom: 15px;
+    padding-left: 15px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+.kensaku_title
+{
+    font-size: 25px;
+    color: rgb(68,114,196);
+    background: linear-gradient(rgb(255,255,255) 0% 90%,rgb(217,217,217));
+    margin-bottom: 5px;
+    padding-left: 10px;
+}
+
+.list_scroll{
+    overflow: auto;
+    max-width: 98%;
+    max-height: 70%;
+    width: fit-content;
+    margin-right: 10px;
+    border: 1px solid #000;
+}
+.list_scroll table{
+    margin: 0;
+    border-spacing: 0;
+}
+.list_scroll tr{
+
+}
+.list_scroll td{
+    white-space: nowrap;
+    border-right: 1px solid #000;
+    border-bottom: 1px solid #000;
+    height: 30px;
+}
+.list_scroll th{
+    white-space: nowrap;
+    border-right: 1px solid #000;
+    border-bottom: 1px solid #000;
+    background: linear-gradient(rgb(68,114,196),rgb(68,114,196));
+    position: sticky;
+    top: 0;
+    left: 0;
+    height: 30px;
+    color: rgb(255,255,255);
+    font-weight: normal;
+    font-size: 15px;
+}
+.list_scroll tr:first-child th{
+    border-top: 1px solid #000;
+}
+.list_scroll th:first-child{
+    border-left: 1px solid #000;
+}
+.list_stripe{
+    background: #e0e0e0; 
+}
+
+.modal_body
+{
+    min-width: 500px;
+    border-radius: 8px;
+    border: none;
+    
+}
+
+dialog::backdrop {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.modal_button{
+    box-shadow: 0 0 0 1px rgb(97,135,219) inset;
+    color: rgb(255,255,255);
+    font-size: 14px;
+    height: 2.0em;
+    width: 100px;
+    margin-right: 2px;
+    margin-bottom: 2px;
+    background-color: rgb(97,135,219);
+    border: none;
+    text-align: center;
+}
+
+.modal_button:hover{
+    background-color: rgb(255 255 255);
+    color: rgb(97,135,219);
+}
+
+.list_button{
+    box-shadow: 0 0 0 1px rgb(97,135,219) inset;
+    color: rgb(255,255,255);
+    font-size: 14px;
+    height: 2.0em;
+    width: 100px;
+    margin-right: 2px;
+    margin-bottom: 2px;
+    background-color: rgb(97,135,219);
+    border: none;
+    text-align: center;
+}
+
+.list_button:hover{
+    background-color: rgb(255,255,255);
+    color: rgb(97,135,219);
+}
+
+.errormsg{
+    color: red;
+    margin-left: 10px;
+}
+
+.icon_button{
+    height: 27px;
+    width: 27px;
+    padding: 0px 0px 0px 0px;
+}
+
+.calendar_table
+{
+    border-color: #e0e0e0;
+}
+
+.calendar_table th
+{
+    background-color: #e0e0e0;
+    font-weight: normal;
+}
+
+.calendar_table td
+{
+    width: 140px;
+    height: 100px;
+    background-color: #fff;
+}
+
+.teizitime
+{
+    border-bottom: solid 1px #ccccd6;
+    margin-top: 10px;
+}
+
+.zangyoutime
+{
+    border-bottom: solid 1px #ccccd6;
+    margin-top: 5px;
+}
+
+#dgl
+{
+    border: black 0px solid;
+    width: 270px;
+    height: 160px;
+    padding: 10px 10px;
+    box-shadow: 0 3px 10px #00000052;
+}
+.dlgtitle
+{
+    font-size: 21px;
+    color: rgb(68,114,196);
+    background: linear-gradient(rgb(255,255,255) 0% 90%,rgb(217,217,217));
+    margin-bottom: 5px;
+    padding-left: 10px;
+    padding-top: 8px;
+}
+.dlgtable
+{
+    margin: auto;
+}
+
+.dlgbtn{
+    box-shadow: 0 0 0 1px rgb(97,135,219) inset;
+    color: rgb(255,255,255);
+    font-size: 14px;
+    height: 2.0em;
+    width: 100px;
+    margin-right: 2px;
+    margin-bottom: 2px;
+    background-color: rgb(97,135,219);
+    border: none;
+    text-align: center;
+}
+
+.dlgbtn:hover{
+    background-color: rgb(255 255 255);
+    color: rgb(97,135,219);
+}
+
+.monthbtn
+{
+    background: none;
+    border: none;
+    font-size: 20px;
+    height: auto;
+    width: 35px;
+    padding: 0 0;
+}
+
+.hiduke{
+    font-size: 16px;
+    padding: 5px;
+}
+
+.hiduke_button{
+    border: none;
+    font-size: 16px;
+    background: rgb(0,0,0,0);
+}
+
+.loading{
+    visibility: hidden;
+    text-align: center;
+}
+
+.pagenum_button
+{
+    font-size: 14px;
+    height: 2.0em;
+    margin-top: 2px;
+    margin-right: 2px;
+}
