@@ -1708,7 +1708,7 @@ function make_teiji_list(){
         {
             $teiji_list .= "<tr>";
         }
-        $teiji_list .= "<td onmousemove='mouseMove(this.parentNode.rowIndex);' onmouseout='mouseOut(this.parentNode.rowIndex);'><label for='check".$counter."' style='display:block;width:100%;height:100%;'><input type='checkbox' name='checkbox[]' id='check".$counter."' value='".$result_row['4CODE']."' class='checkbox_style'></label></td>";
+        $teiji_list .= "<td onmousemove='mouseMove(this.parentNode.rowIndex,checkboxlist);' onmouseout='mouseOut(this.parentNode.rowIndex,checkboxlist);'><label for='check".$counter."' style='display:block;width:100%;height:100%;'><input type='checkbox' name='checkbox[]' id='check".$counter."' value='".$result_row['4CODE']."' class='checkbox_style'></label></td>";
         $teiji_list .= "<td>".$result_row['STAFFID']."</td>";
         $teiji_list .= "<td>".$result_row['STAFFNAME']."</td>";
         $teiji_list .= "</tr>";
@@ -1936,7 +1936,7 @@ function make_pjend_list($sql,$post){
         }
         else
         {
-            $list_html .= "<td onmousemove='mouseMove(this.parentNode.rowIndex);' onmouseout='mouseOut(this.parentNode.rowIndex);'><label for='check".$counter."' style='display:block;width:100%;height:100%;'><input type='checkbox' name='checkbox[]' id='check".$counter."' value='".$result_row['5CODE']."' onclick='checkbox_select();' class='checkbox_style'></label></td>";
+            $list_html .= "<td onmousemove='mouseMove(this.parentNode.rowIndex,checkboxlist);' onmouseout='mouseOut(this.parentNode.rowIndex,checkboxlist);'><label for='check".$counter."' style='display:block;width:100%;height:100%;'><input type='checkbox' name='checkbox[]' id='check".$counter."' value='".$result_row['5CODE']."' onclick='checkbox_select();' class='checkbox_style'></label></td>";
         }
         for($i = 0; $i < count($columns_array); $i++)
         {
@@ -2334,7 +2334,7 @@ function make_pjagain_list($sql,$post){
         {
             $list_html .= "<tr class='list_stripe'>";
         }
-        $list_html .= "<td onmousemove='mouseMove(this.parentNode.rowIndex);' onmouseout='mouseOut(this.parentNode.rowIndex);'><label for='radio".$counter."' style='display:block;width:100%;height:100%;'><input type='radio' name='radio' id='radio".$counter."' value='".$result_row['5CODE']."' onclick='radiobutton_select();' class='radio_style'></label></td>";
+        $list_html .= "<td onmousemove='mouseMove(this.parentNode.rowIndex,radiolist);' onmouseout='mouseOut(this.parentNode.rowIndex,radiolist);'><label for='radio".$counter."' style='display:block;width:100%;height:100%;'><input type='radio' name='radio' id='radio".$counter."' value='".$result_row['5CODE']."' onclick='radiobutton_select();' class='radio_style'></label></td>";
         for($i = 0; $i < count($columns_array); $i++)
         {
             if(!isset($result_row[$columns_array[$i]]))

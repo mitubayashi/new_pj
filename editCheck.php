@@ -138,6 +138,7 @@
         <script src='./js/modal.js'></script>
         <script src='./js/progress.js'></script>
         <script src='./jquery/jquery-1.8.3.min.js'></script>
+        <script src='./js/style_change.js'></script>
         <script>
             var filename = '<?php echo $filename; ?>';
             var inputcheck_data = JSON.parse('<?php echo json_encode($inputcheck_data); ?>');

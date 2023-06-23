@@ -439,6 +439,11 @@ function makeformInsert_set($post){
     {
         $insert_html .= makeDetailCharge($post);
     }
+    //顧客メンバー入力欄
+    if($filename == "KOKYAKUTEAM_1")
+    {
+        $insert_html .= makeKOKYAKUmember($post);
+    }
     $insert_html .= '</table>';
     
     return $insert_html;
@@ -565,9 +570,61 @@ function makeformEdit_set($post){
     {
         $edit_html .= makeDetailCharge($post);
     }
+    
+    //顧客メンバー入力欄
+    if($filename == "KOKYAKUTEAM_3")
+    {
+        $edit_html .= makeKOKYAKUmember($post);
+    }
     $edit_html .= '</table>';
     
     return $edit_html;
+}
+
+/************************************************************************************************************
+function makeKOKYAKUmember($post)
+
+引数          $post                                                 登録情報
+
+戻り値	$kokyaku_member_html                      顧客メンバー入力欄HTML
+************************************************************************************************************/
+function makeKOKYAKUmember($post)
+{
+    //初期設定
+    require_once ("f_DB.php");
+    
+    //変数
+    $kokyaku_member_html = "";
+    $counter = 0;
+    
+    //処理
+    $con = dbconect();
+    $sql = "SELECT *FROM syaininfo WHERE LUSERNAME IS NOT NULL AND LUSERPASS IS NOT NULL ORDER BY STAFFID ASC ;";
+    $result = $con->query($sql);
+    $kokyaku_member_html .= "<tr><td valign='top'>メンバー</td><td>";
+    $kokyaku_member_html .= "<div class='list_scroll' style='max-height: 320px;'>";
+    $kokyaku_member_html .= "<table id='checkboxlist'>";
+    $kokyaku_member_html .= "<tr><th>選択</th><th>社員番号</th><th>社員名</th></tr>";
+    while($result_row = $result->fetch_array(MYSQLI_ASSOC))
+    {
+        if(($counter % 2) == 1)
+        {
+            $kokyaku_member_html .= "<tr class='list_stripe'>";
+        }
+        else
+        {
+            $kokyaku_member_html .= "<tr>";
+        }
+        $kokyaku_member_html .= "<td onmousemove='mouseMove(this.parentNode.rowIndex,checkboxlist);' onmouseout='mouseOut(this.parentNode.rowIndex,checkboxlist);'><label for='check".$counter."' style='display:block;width:100%;height:100%;'><input type='checkbox' name='checkbox[]' id='check".$counter."' value='".$result_row['4CODE']."' class='checkbox_style'></label></td>";
+        $kokyaku_member_html .= "<td>".$result_row['STAFFID']."</td>";
+        $kokyaku_member_html .= "<td>".$result_row['STAFFNAME']."</td>";
+        $kokyaku_member_html .= "</tr>";
+        $counter++;
+    }
+    $kokyaku_member_html .= "</table>";
+    $kokyaku_member_html .= "</div>";
+    $kokyaku_member_html .= "</td></tr>";
+    return $kokyaku_member_html;
 }
 
 /************************************************************************************************************

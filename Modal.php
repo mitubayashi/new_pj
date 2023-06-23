@@ -186,7 +186,7 @@
         }
         $list .= "<tr>";
         $onclick = 'select_value("'.$form_value[0].'","'.$form_value[1].'");';
-        $list .= "<td onmousemove='mouseMove(this.parentNode.rowIndex);' onmouseout='mouseOut(this.parentNode.rowIndex);'><label for='radio".$counter."' style='display:block;width:100%;height:100%;'><input type='radio' id='radio".$counter."' name='radio' onclick='".$onclick."' class='radio_style'></td>";
+        $list .= "<td onmousemove='mouseMove(this.parentNode.rowIndex,radiolist);' onmouseout='mouseOut(this.parentNode.rowIndex,radiolist);'><label for='radio".$counter."' style='display:block;width:100%;height:100%;'><input type='radio' id='radio".$counter."' name='radio' onclick='".$onclick."' class='radio_style'></td>";
         for($i = 0; $i < count($result_num); $i++)
         {
             $list .= "<td>".$result_row[$form_ini[$result_num[$i]]['column']]."</td>";
@@ -217,26 +217,8 @@
         <link rel="stylesheet" type="text/css" href="./css/list_css.css">
         <script src='./js/inputcheck.js'></script>
         <script src='./js/modal.js'></script>
+        <script src='./js/style_change.js'></script>
         <script>
-            //ラジオボタン、チェックボックスのあるセルにカーソルを合わせた時の動作
-            function mouseMove(row)
-            {
-                var tabledata = document.getElementById("radiolist");
-                for(var i = 0; i < tabledata.rows[row].cells.length; i++)
-                {
-                    tabledata.rows[row].cells[i].style.backgroundColor = "#f7ca79";
-                }
-            }
-
-            //ラジオボタン、チェックボックスのあるセルからカーソルが離れた時の動作
-            function mouseOut(row)
-            {
-                var tabledata = document.getElementById("radiolist");
-                for(var i = 0; i < tabledata.rows[row].cells.length; i++)
-                {
-                    tabledata.rows[row].cells[i].style.backgroundColor = "";
-                }
-            }
         </script>
     </head>
     <body>

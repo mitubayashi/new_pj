@@ -74,32 +74,13 @@
         <script src='./js/inputcheck.js'></script>
         <script src='./js/modal.js'></script>
         <script src='./js/pjend.js'></script>
+        <script src='./js/style_change.js'></script>
         <script src='./jquery/jquery-1.8.3.min.js'></script>
         <script>
             var filename = '<?php echo $filename; ?>';
             window.onload = function(){
                 //日付入力欄切り替え
                 date_disabled_change();
-            }
-
-            //ラジオボタン、チェックボックスのあるセルにカーソルを合わせた時の動作
-            function mouseMove(row)
-            {
-                var tabledata = document.getElementById("checkboxlist");
-                for(var i = 0; i < tabledata.rows[row].cells.length; i++)
-                {
-                    tabledata.rows[row].cells[i].style.backgroundColor = "#f7ca79";
-                }
-            }
-
-            //ラジオボタン、チェックボックスのあるセルからカーソルが離れた時の動作
-            function mouseOut(row)
-            {
-                var tabledata = document.getElementById("checkboxlist");
-                for(var i = 0; i < tabledata.rows[row].cells.length; i++)
-                {
-                    tabledata.rows[row].cells[i].style.backgroundColor = "";
-                }
             }
         </script>
     </head>
