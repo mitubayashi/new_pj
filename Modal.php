@@ -186,7 +186,7 @@
         }
         $list .= "<tr>";
         $onclick = 'select_value("'.$form_value[0].'","'.$form_value[1].'");';
-        $list .= "<td onmousemove='mouseMove(this.parentNode.rowIndex);' onmouseout='mouseOut(this.parentNode.rowIndex);'><label for='radio".$counter."' style='display:block;width:100%;height:100%;'><input type='radio' id='radio".$counter."' name='radio' onclick='".$onclick."'></td>";
+        $list .= "<td onmousemove='mouseMove(this.parentNode.rowIndex);' onmouseout='mouseOut(this.parentNode.rowIndex);'><label for='radio".$counter."' style='display:block;width:100%;height:100%;'><input type='radio' id='radio".$counter."' name='radio' onclick='".$onclick."' class='radio_style'></td>";
         for($i = 0; $i < count($result_num); $i++)
         {
             $list .= "<td>".$result_row[$form_ini[$result_num[$i]]['column']]."</td>";
