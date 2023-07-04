@@ -59,6 +59,7 @@
     $team = get_team();
     $syain = get_syain();
     $koutei = get_koutei();
+    $member = get_member();
     
     //ŒŸˆ—ÅI“úæ“¾
     $min = lastEndMonth();
@@ -74,6 +75,7 @@
         <script src='./js/progress.js'></script>
         <script src='./jquery/jquery-1.8.3.min.js'></script>
         <script src='./js/style_change.js'></script>
+        <script src='./js/kokyakumember.js'></script>
         <script>
             var filename = '<?php echo $filename; ?>';
             var inputcheck_data = JSON.parse('<?php echo json_encode($inputcheck_data); ?>');
@@ -81,6 +83,7 @@
                 if(filename == 'PJTOUROKU_3')
                 {
                     kingaku_goukei();
+                    syain_sort();
                 }
                 if(filename == 'PROGRESSINFO_3' || filename == "TOP_3")
                 {
@@ -147,5 +150,6 @@
         <input type='hidden' id='teamlist' value='<?php echo $team; ?>'>
         <input type='hidden' id='syainlist' value='<?php echo $syain; ?>'>
         <input type='hidden' id='kouteilist' value='<?php echo $koutei; ?>'>
+        <input type='hidden' id='memberlist' value='<?php echo $member; ?>'>
     </body>
 </html>

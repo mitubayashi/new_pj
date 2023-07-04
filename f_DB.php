@@ -596,6 +596,7 @@ function kokyakuteam_insert($post){
     //変数
     $sql = "";
     $judge = false;
+    $member = "";
     
     //処理
     $con = dbconect();
@@ -617,8 +618,22 @@ function kokyakuteam_insert($post){
         $kokyakuid = $result_row['12CODE'];
     }
     
+    //メンバー情報作成
+    if(isset($post['all_check']))
+    {
+        $member = '0';
+    }
+    else
+    {
+        for($i = 0; $i < count($post['checkbox']); $i++)
+        {
+            $member .= $post['checkbox'][$i].',';
+        }
+        $member = substr($member,0,-1);
+    }
+        
     //チーム情報を登録する
-    $sql = "INSERT INTO teaminfo (12CODE,TEAMID,TEAMNAME) VALUES('".$kokyakuid."','".$post['1303']."','".$post['1304']."');";
+    $sql = "INSERT INTO teaminfo (12CODE,TEAMID,TEAMNAME,MEMBER) VALUES('".$kokyakuid."','".$post['1303']."','".$post['1304']."','".$member."');";
     $result = $con->query($sql);
 }
 
@@ -985,6 +1000,7 @@ function kokyakuteam_update($post){
     $sql = "";
     $before_data = array();
     $judge = false;
+    $member = "";
     
     //処理
     $con = dbconect();
@@ -1005,8 +1021,22 @@ function kokyakuteam_update($post){
         $result = $con->query($sql) or ($judge = true);
     }
     
+    //メンバー情報作成
+    if(isset($post['all_check']))
+    {
+        $member = '0';
+    }
+    else
+    {
+        for($i = 0; $i < count($post['checkbox']); $i++)
+        {
+            $member .= $post['checkbox'][$i].',';
+        }
+        $member = substr($member,0,-1);
+    }
+    
     //チーム情報を更新
-    $sql = "UPDATE teaminfo SET TEAMNAME = '".$post['1304']."' WHERE 13CODE = '".$post['edit_id']."';";
+    $sql = "UPDATE teaminfo SET TEAMNAME = '".$post['1304']."',MEMBER = '".$member."' WHERE 13CODE = '".$post['edit_id']."';";
     $result = $con->query($sql) or ($judge = true);    
 }
 
@@ -1312,6 +1342,25 @@ function get_team(){
     return $team; 
 }
 
+function get_member(){
+    
+    //初期設定
+    require_once ("f_DB.php");
+
+    //変数
+    $member = "";
+    $sql = "";
+
+    //処理
+    $con = dbconect();
+    $sql = "SELECT *FROM teaminfo AS a LEFT JOIN kokyakuinfo AS b ON a.12CODE = b.12CODE;";
+    $result = $con->query($sql);
+    while($result_row = $result->fetch_array(MYSQLI_ASSOC))
+    {
+        $member .= $result_row['KOKYAKUID'].'#$'.$result_row['TEAMID'].'#$'.$result_row['MEMBER'].'#$';
+    }
+    return $member;
+}
 /************************************************************************************************************
 function get_progress_data($edit_id)
 

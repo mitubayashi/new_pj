@@ -70,6 +70,8 @@
         <script src='./js/teiji.js'></script>
         <script src='./js/pjend.js'></script>
         <script src='./js/pjagain.js'></script>
+        <script src='./js/kokyakumember.js'></script>
+        <script src='./js/style_change.js'></script>
     </head>
     <body>
         <div align="center" style="height: 100%; margin: auto;">            

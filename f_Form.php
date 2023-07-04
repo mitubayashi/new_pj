@@ -311,7 +311,18 @@ function makeformInsert_set($post){
         }
         else
         {
-            $value = "";
+            if($insert_form_num[$i] == "507")
+            {
+                $value = "0";
+            }
+            elseif($insert_form_num[$i] == "509")
+            {
+                $value = date("Y-m-d");
+            }
+            else
+            {
+                $value = "";
+            }            
         }
         
         //入力指示作成
@@ -593,16 +604,46 @@ function makeKOKYAKUmember($post)
     //初期設定
     require_once ("f_DB.php");
     
+    //定数
+    $filename = $_SESSION['filename'];
+    
     //変数
     $kokyaku_member_html = "";
     $counter = 0;
+    $kokyaku_member_array = array();
+    $kokyaku_member_array[0] = "";
     
     //処理
     $con = dbconect();
+    
+    //元の情報取得
+    if($filename == "KOKYAKUTEAM_3")
+    {
+        $sql = "SELECT *FROM teaminfo WHERE 13CODE = '".$_SESSION['edit_id']."';";
+        $result = $con->query($sql);        
+        while($result_row = $result->fetch_array(MYSQLI_ASSOC))
+        {
+            $kokyaku_member_array = explode(',', $result_row['MEMBER']);
+        }
+    }
+    
+    //社員一覧作成
     $sql = "SELECT *FROM syaininfo WHERE LUSERNAME IS NOT NULL AND LUSERPASS IS NOT NULL ORDER BY STAFFID ASC ;";
     $result = $con->query($sql);
     $kokyaku_member_html .= "<tr><td valign='top'>メンバー</td><td>";
-    $kokyaku_member_html .= "<div class='list_scroll' style='max-height: 320px;'>";
+    if($kokyaku_member_array[0] == "0")
+    {
+        $kokyaku_member_html .= "<input type='checkbox' value='0' id='all_check' name='all_check' class='check_box_none' checked><label for='all_check' style='pointer-events: none;'>全社員</label>";
+    }
+    elseif(isset($post['all_check']))
+    {
+        $kokyaku_member_html .= "<input type='checkbox' value='0' id='all_check' name='all_check' onchange='all_checked();' checked><label for='all_check' onchange='all_checked();'>全社員</label>";     
+    }
+    else
+    {
+        $kokyaku_member_html .= "<input type='checkbox' value='0' id='all_check' name='all_check' onchange='all_checked();'><label for='all_check'>全社員</label>";
+    }
+    $kokyaku_member_html .= "<div class='list_scroll' style='max-height: 300px;'>";
     $kokyaku_member_html .= "<table id='checkboxlist'>";
     $kokyaku_member_html .= "<tr><th>選択</th><th>社員番号</th><th>社員名</th></tr>";
     while($result_row = $result->fetch_array(MYSQLI_ASSOC))
@@ -615,7 +656,24 @@ function makeKOKYAKUmember($post)
         {
             $kokyaku_member_html .= "<tr>";
         }
-        $kokyaku_member_html .= "<td onmousemove='mouseMove(this.parentNode.rowIndex,checkboxlist);' onmouseout='mouseOut(this.parentNode.rowIndex,checkboxlist);'><label for='check".$counter."' style='display:block;width:100%;height:100%;'><input type='checkbox' name='checkbox[]' id='check".$counter."' value='".$result_row['4CODE']."' class='checkbox_style'></label></td>";
+        if($kokyaku_member_array[0] == "0" || in_array($result_row['4CODE'],$kokyaku_member_array))
+        {
+            $kokyaku_member_html .= "<td onmousemove='mouseMove(this.parentNode.rowIndex,checkboxlist);' onmouseout='mouseOut(this.parentNode.rowIndex,checkboxlist);'>";
+            $kokyaku_member_html .= "<label for='check".$counter."' style='display:block;width:100%;height:100%;pointer-events: none;'><input type='checkbox' name='checkbox[]' id='check".$counter."' value='".$result_row['4CODE']."' class='checkbox_style check_box_none' onchange='check_change();' checked></label>";     
+            $kokyaku_member_html .= "</td>";
+        }
+        elseif(isset($post['checkbox']) && in_array($result_row['4CODE'],$post['checkbox']))
+        {
+            $kokyaku_member_html .= "<td onmousemove='mouseMove(this.parentNode.rowIndex,checkboxlist);' onmouseout='mouseOut(this.parentNode.rowIndex,checkboxlist);'>";
+            $kokyaku_member_html .= "<label for='check".$counter."' style='display:block;width:100%;height:100%;'><input type='checkbox' name='checkbox[]' id='check".$counter."' value='".$result_row['4CODE']."' class='checkbox_style' onchange='check_change();' checked></label>";     
+            $kokyaku_member_html .= "</td>"; 
+        }
+        else
+        {
+            $kokyaku_member_html .= "<td onmousemove='mouseMove(this.parentNode.rowIndex,checkboxlist);' onmouseout='mouseOut(this.parentNode.rowIndex,checkboxlist);'>";
+            $kokyaku_member_html .= "<label for='check".$counter."' style='display:block;width:100%;height:100%;'><input type='checkbox' name='checkbox[]' id='check".$counter."' value='".$result_row['4CODE']."' class='checkbox_style' onchange='check_change();'></label>";     
+            $kokyaku_member_html .= "</td>";            
+        }
         $kokyaku_member_html .= "<td>".$result_row['STAFFID']."</td>";
         $kokyaku_member_html .= "<td>".$result_row['STAFFNAME']."</td>";
         $kokyaku_member_html .= "</tr>";
@@ -682,7 +740,7 @@ function makeDetailCharge($post){
     
     //社員リスト作成
     $detail_charge_html .= '<div class="list_scroll" style="max-height: 360px;">';
-    $detail_charge_html .= '<table>';
+    $detail_charge_html .= '<table id="kingaku_list">';
     $detail_charge_html .= '<tr>';
     $detail_charge_html .= '<th>No</th>';
     $detail_charge_html .= '<th>社員番号</th>';
@@ -692,9 +750,9 @@ function makeDetailCharge($post){
     for($i = 0; $i < count($syain_list); $i++)
     {
         $detail_charge_html .= '<tr>';
-        $detail_charge_html .= '<td>'.($i + 1).'</td>';
-        $detail_charge_html .= '<td>'.$syain_list[$i]['STAFFID'].'</td>';
-        $detail_charge_html .= '<td>'.$syain_list[$i]['STAFFNAME'].'</td>';
+        $detail_charge_html .= '<td>'.($i + 1).'<input type="hidden" id="syaincode_'.$i.'" value="'.$syain_list[$i]['4CODE'].'"></td>';
+        $detail_charge_html .= '<td>'.$syain_list[$i]['STAFFID'].'<input type="hidden" id="syainid_'.$i.'" value="'.$syain_list[$i]['STAFFID'].'"></td>';
+        $detail_charge_html .= '<td>'.$syain_list[$i]['STAFFNAME'].'<input type="hidden" id="syainname_'.$i.'" value="'.$syain_list[$i]['STAFFNAME'].'"></td>';
         $detail_charge_html .= '<td>';
         if(isset($post['kingaku_'.$syain_list[$i]['4CODE']]))
         {

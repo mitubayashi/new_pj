@@ -379,3 +379,9 @@ dialog::backdrop {
     margin-top: 7px;
     margin-left: 9px;
 }
+
+.check_box_none
+{
+    pointer-events: none;
+    opacity: 0.3;
+}

@@ -164,7 +164,7 @@ function check()
         }
     }
     
-    if(filename == 'PJTOUROKU_3')
+    if(filename == 'PJTOUROKU_3' || filename == 'PJTOUROKU_1')
     {
         var total_row = document.getElementById('total_row').value;
         for(var i = 0; i < total_row; i++)
@@ -427,6 +427,7 @@ function kokyakumei_set()
             }
             counter = counter + 3;
         }    
+        syain_sort();
     }
 }
 
@@ -453,6 +454,7 @@ function teammei_set()
         }
         counter = counter + 3;
     }    
+    syain_sort();
 }
 
 function period_select()
