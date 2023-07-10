@@ -991,7 +991,7 @@ function makePROGRESSlist($post,$user){
             $progress_html .= "<td><button class='icon_button' type='button' onclick='popup_modal(\"3_$i\");'><i class='fas fa-tasks' title='H’ö‘I‘ð'></i></button><input type='hidden' id='301_".$i."' name='301_".$i."' value='".$post['301_'.$i]."'></td>";
             $progress_html .= "<td><input type='text' class='form_text disabled' style='width: 100px;' id='302_".$i."' name='302_".$i."' value='".$post['302_'.$i]."'></td>";
             $progress_html .= "<td><input type='text' class='form_text disabled' style='width: 290px;' id='303_".$i."' name='303_".$i."' value='".$post['303_'.$i]."'></td>";
-            $progress_html .= "<td><input type='text' class='form_text' id='705_".$i."' name='705_".$i."' style='width: 90px;' value='".$post['705_'.$i]."' onchange='time_total();'></td>";
+            $progress_html .= "<td><input type='text' class='form_text' id='705_".$i."' name='705_".$i."' style='width: 90px;' value='".$post['705_'.$i]."' onchange='time_total();' list='time'></td>";
             $progress_html .= "<td><input type='text' class='form_text' id='706_".$i."' name='706_".$i."' style='width: 90px;' value='".$post['706_'.$i]."' onchange='time_total();'></td>";
         }
         else
@@ -1002,7 +1002,7 @@ function makePROGRESSlist($post,$user){
             $progress_html .= "<td><button class='icon_button' type='button' onclick='popup_modal(\"3_$i\");'><i class='fas fa-tasks' title='H’ö‘I‘ð'></i></button><input type='hidden' id='301_".$i."' name='301_".$i."'></td>";
             $progress_html .= "<td><input type='text' class='form_text disabled' style='width: 100px;' id='302_".$i."' name='302_".$i."'></td>";
             $progress_html .= "<td><input type='text' class='form_text disabled' style='width: 290px;' id='303_".$i."' name='303_".$i."'></td>";
-            $progress_html .= "<td><input type='text' class='form_text' id='705_".$i."' name='705_".$i."' style='width: 90px;' onchange='time_total();'></td>";
+            $progress_html .= "<td><input type='text' class='form_text' id='705_".$i."' name='705_".$i."' style='width: 90px;' onchange='time_total();' list='time'></td>";
             $progress_html .= "<td><input type='text' class='form_text' id='706_".$i."' name='706_".$i."' style='width: 90px;' value='0' onchange='time_total();'></td>";            
         }
         $progress_html .= "<td>";
@@ -1012,7 +1012,15 @@ function makePROGRESSlist($post,$user){
         $progress_html .= "</td>";
         $progress_html .= "</tr>";
     }
-    
+    //’èŽžŽžŠÔ‘I‘ðŽˆ’Ç‰Á
+    $datalist = "7.75,7.50,7.25,7.00,6.75,6.50,6.25,6.00,5.75,5.50,5.25,5.00,4.75,4.50,4.25,4.00,3.75,3.50,3.25,3.00,2.75,2.50,2.25,2.00,1.75,1.50,1.25,1.00,0.75,0.50,0.25";
+    $datalist = explode(",", $datalist);                                                                                                                                                                                                                                                                       
+    $progress_html .= "<datalist id='time'>";
+    for($i = 0; $i < count($datalist); $i++)
+    {
+        $progress_html .= "<option value='".$datalist[$i]."'></option>";
+    }
+    $progress_html .= "</datalist>";
     $progress_html .= "</table>";
     $progress_html .= "</td></tr>";
     $progress_html .= "</table>";
