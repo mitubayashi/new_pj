@@ -355,11 +355,6 @@ dialog::backdrop {
     background: rgb(0,0,0,0);
 }
 
-.loading{
-    visibility: hidden;
-    text-align: center;
-}
-
 .pagenum_button
 {
     font-size: 14px;
@@ -384,4 +379,32 @@ dialog::backdrop {
 {
     pointer-events: none;
     opacity: 0.3;
+}
+
+.loading
+{
+    border: none;
+    width: 135px;
+    height: 135px;
+}
+
+.loading_msg
+{
+    padding-top: 10px;
+    color:rgb(39,79,169);
+    -webkit-animation:blink 0.8s ease-in-out infinite alternate;
+    -moz-animation:blink 0.8s ease-in-out infinite alternate;
+    animation:blink 0.8s ease-in-out infinite alternate;
+}
+@-webkit-keyframes blink{
+    0% {opacity:0;}
+    100% {opacity:1;}
+}
+@-moz-keyframes blink{
+    0% {opacity:0;}
+    100% {opacity:1;}
+}
+@keyframes blink{
+    0% {opacity:0;}
+    100% {opacity:1;}
 }

@@ -1122,6 +1122,274 @@ function existCheck($post,$tablenum,$type){
 }
 
 /************************************************************************************************************
+function makeList_keihi($sql,$post)
+
+引数1           $sql                                      検索SQL
+
+戻り値          $list_html                              リストhtml
+************************************************************************************************************/
+function makeList_keihi($sql,$post){
+    
+    //初期設定
+    $form_ini = parse_ini_file('./ini/form.ini', true);
+    $SQL_ini = parse_ini_file('./ini/SQL.ini', true);
+    require_once ("f_Form.php");
+    require_once ("f_DB.php");
+    require_once ("f_SQL.php");
+    
+    //定数
+    $filename = $_SESSION['filename'];
+    $columns_array = explode(',',$SQL_ini[$filename]['listcolumns']);
+    $columnname_array = explode(',',$SQL_ini[$filename]['clumnname']);
+    $main_code = $form_ini[$filename]['main_code'];
+    
+    //変数
+    $list_html = "";
+    $judge = false;
+    $counter = 1;
+    
+    //処理
+    $con = dbconect();
+    $list_html .= "<div class='list_scroll'>";
+    $list_html .= "<table>";
+   
+    //項目名作成処理
+    $list_html .= "<thead><tr>";
+    $list_html .= "<th><a>No</a></th>";
+    for($i = 0; $i < count($columnname_array); $i++)
+    {
+        $list_html .= "<th><a>".$columnname_array[$i]."</a></th>";
+    }
+    $list_html .= "<th><a>編集</a></th>";
+    $list_html .= "</tr></thead>";
+    
+    //経費情報取得
+    $keihi_data = array();
+    $keihi_sql = "SELECT 5CODE,kubun,SUM(charge) AS charge FROM keihiinfo GROUP BY 5CODE,kubun;";
+    $result = $con->query($keihi_sql) or ($judge = true);																		// クエリ発行
+    while($result_row = $result->fetch_array(MYSQLI_ASSOC))
+    {
+        $keihi_data[$result_row['5CODE']][$result_row['kubun']] = $result_row['charge'];
+    }   
+    
+    //一覧表内容作成処理
+    $list_html .= "<tbody>";
+    $result = $con->query($sql[0]) or ($judge = true);																		// クエリ発行
+    while($result_row = $result->fetch_array(MYSQLI_ASSOC))
+    {
+        if(($counter%2) == 1)
+        {
+            $list_html .= "<tr>";
+        }
+        else
+        {
+            $list_html .= "<tr class='list_stripe'>";
+        }
+        $list_html .= "<td>".$counter."</td>";
+        for($i = 0; $i < count($columns_array); $i++)
+        {
+            $list_html .= "<td>".$result_row[$columns_array[$i]]."</td>";            
+        }
+        
+        //交通費表示
+        if(isset($keihi_data[$result_row['5CODE']]['0']))
+        {
+            $koutuhi = $keihi_data[$result_row['5CODE']]['0'];
+        }
+        else
+        {
+            $koutuhi = 0;
+        }
+        $list_html .= "<td align='right'>".$koutuhi."</td>";
+        
+        //その他表示
+        if(isset($keihi_data[$result_row['5CODE']]['1']))
+        {
+            $sonota = $keihi_data[$result_row['5CODE']]['1'];
+        }
+        else
+        {
+            $sonota = 0;
+        }
+        $list_html .= "<td align='right'>".$sonota."</td>";
+        
+        //経費合計表示
+        $list_html .= "<td align='right'>".($koutuhi + $sonota)."</td>";        
+        
+        $list_html .= "<td><input type='submit' name='keihinyuryoku_5_button_".$result_row[$form_ini[$main_code]['column']]."' value='編集'></td>";
+        $list_html .= "</tr>";
+        $counter++;
+    }
+    $list_html .= "</tbody>";
+    
+    $list_html .= "</table>";
+    $list_html .= "</div>";
+    return $list_html;
+}
+
+/************************************************************************************************************
+function make_listUser($edit_id)
+
+引数1           $edit_id                                      更新ID
+
+戻り値          $list_html                              リストhtml
+************************************************************************************************************/
+function makekeihi_form($edit_id)
+{
+    //初期設定
+    $form_ini = parse_ini_file('./ini/form.ini', true);
+    $SQL_ini = parse_ini_file('./ini/SQL.ini', true);
+    require_once ("f_Form.php");
+    require_once ("f_DB.php");
+    require_once ("f_SQL.php");
+
+    //定数
+    $filename = $_SESSION['filename'];
+    
+    //変数
+    $list_html = "";
+    $judge = false;
+    $counter = 1;
+    $pulldown_html = "";
+    $keihi_array = array();
+    
+    //プロジェクトコード、プロジェクト名取得
+    $con = dbconect();
+    $sql = "SELECT 5CODE,substring(KOKYAKUID,1,2) AS PERIOD,CONCAT(KOKYAKUID,'-',TEAMID,'-',ANKENID,'-',EDABAN) AS PJCODE,PJNAME FROM projectinfo AS projectinfo ";
+    $sql .= "LEFT JOIN kokyakuinfo AS kokyakuinfo ON projectinfo.12CODE = kokyakuinfo.12CODE ";
+    $sql .= "LEFT JOIN teaminfo AS teaminfo ON projectinfo.13CODE = teaminfo.13CODE WHERE 5CODE = '".$edit_id."';";
+    $result = $con->query($sql) or ($judge = true);																		// クエリ発行    
+    while($result_row = $result->fetch_array(MYSQLI_ASSOC))
+    {
+        //プロジェクトコード、プロジェクト名表示
+        $list_html .= "<input type='hidden' name='edit_id' value='".$edit_id."'>";
+        $list_html .= "<table>";
+        $list_html .= "<tr>";
+        $list_html .= "<td>プロジェクトコード</td>";
+        $list_html .= "<td><input type='text' value='".$result_row['PJCODE']."' name='PJCODE' class='form_text disabled' size='30'></td>";
+        $list_html .= "</tr>";
+        $list_html .= "<tr>";
+        $list_html .= "<td>プロジェクト名</td>";
+        $list_html .= "<td><input type='text' value='".$result_row['PJNAME']."' name='PJNAME' class='form_text disabled' size='60'></td>";       
+        $list_html .= "</tr>";
+        $list_html .= "</table>";
+    }
+    
+    //項目名作成
+    $list_html .= '<div style="margin-top: 5px; margin-bottom: 5px;">';
+    $list_html .= "<div class='list_scroll' style='height: 350px;'>";
+    $list_html .= "<table>";
+    $list_html .= "<tr>";
+    $list_html .= "<th>No</th>";
+    $list_html .= "<th>社員選択</th>";
+    $list_html .= "<th>区分</th>";
+    $list_html .= "<th>金額</th>";
+    $list_html .= "<th>年月</th>";
+    $list_html .= "</tr>";
+
+    //経費情報取得
+    $counter = 0;
+    $sql = "SELECT 4CODE,kubun,charge,date_format(month, '%Y-%m') AS month FROM keihiinfo WHERE 5CODE = '".$edit_id."';";
+    $result = $con->query($sql) or ($judge = true);																		// クエリ発行    
+    while($result_row = $result->fetch_array(MYSQLI_ASSOC))
+    {
+        $keihi_array[$counter]['syain'] = $result_row['4CODE'];
+        $keihi_array[$counter]['kubun'] = $result_row['kubun'];
+        $keihi_array[$counter]['charge'] = $result_row['charge'];
+        $keihi_array[$counter]['month'] = $result_row['month'];
+        $counter++;
+    }    
+    
+    //入力欄作成
+    for($i = 0; $i < 15; $i++)
+    {
+        $list_html .= "<tr>";
+        
+        //値
+        if(isset($keihi_array[$i]))
+        {
+            $syain = $keihi_array[$i]['syain'];
+            $kubun = $keihi_array[$i]['kubun'];
+            $charge = $keihi_array[$i]['charge'];
+            $month = $keihi_array[$i]['month'];
+        }
+        else
+        {
+            $syain = "";
+            $kubun = "";
+            $charge = "";
+            $month = "";
+        }
+        
+        //No
+        $list_html .= "<td>".($i + 1)."</td>";
+        
+        //社員選択プルダウン
+        $sql = "SELECT *FROM syaininfo WHERE LUSERNAME IS NOT NULL AND LUSERPASS IS NOT NULL ORDER BY STAFFID ASC;";
+        $result = $con->query($sql) or ($judge = true);																		// クエリ発行    
+        while($result_row = $result->fetch_array(MYSQLI_ASSOC))
+        {
+            if($syain == $result_row['4CODE'])
+            {
+                $pulldown_html .= "<option value='".$result_row['4CODE']."' selected>".$result_row['STAFFNAME']."</option>";
+            }
+            else
+            {
+                $pulldown_html .= "<option value='".$result_row['4CODE']."'>".$result_row['STAFFNAME']."</option>";
+            }
+        }
+        $list_html .= "<td>";
+        $list_html .= "<select id='syain_".$i."' name='syain_".$i."' class='form_text' onchange='input_style(this.id,true);'>";
+        $list_html .= "<option value=''>指定なし</option>";
+        $list_html .= $pulldown_html;
+        $pulldown_html = "";
+        $list_html .= "</select>";
+        $list_html .= "</td>";
+        
+        //区分
+        $list_html .= "<td>";
+        $list_html .= "<select id='kubun_".$i."' name='kubun_".$i."' class='form_text' onchange='input_style(this.id,true);'>";
+        
+        if($kubun == '')
+        {
+            $list_html .= "<option value='' selected>指定なし</option>";
+            $list_html .= "<option value='0'>交通費</option>";
+            $list_html .= "<option value='1'>その他</option>";        
+        }
+        elseif($kubun == '0')
+        {
+            $list_html .= "<option value=''>指定なし</option>";
+            $list_html .= "<option value='0' selected>交通費</option>";
+            $list_html .= "<option value='1'>その他</option>";                    
+        }        
+        else
+        {
+            $list_html .= "<option value=''>指定なし</option>";
+            $list_html .= "<option value='0'>交通費</option>";
+            $list_html .= "<option value='1' selected>その他</option>";                       
+        }
+        $list_html .= "</select>";
+        $list_html .= "</td>";
+        
+        //金額
+        $list_html .= "<td>";
+        $list_html .= "<input type='text' id='charge_".$i."' name='charge_".$i."' value='".$charge."' class='form_text' onchange='kingaku_check(this.id);' placeholder='半角数字7字以内'>";
+        $list_html .= "</td>";
+        
+        //年月
+        $list_html .= "<td>";
+        $list_html .= "<input type='month' id='month_".$i."' name='month_".$i."' value='".$month."' class='form_text' onchange='input_style(this.id,true);'>";
+        $list_html .= "</td>";
+        
+        $list_html .= "</tr>";
+    }
+    $list_html .= "</table>";
+    $list_html .= "</div>";
+    $list_html .= "</div>";
+    return $list_html;
+}
+
+/************************************************************************************************************
 function make_listUser($sql,$post)
 
 引数1           $sql                                      検索SQL
@@ -3335,6 +3603,10 @@ function insert_sousarireki($sousakubun,$data)
             $sousa_gamen = "ユーザー管理";
             $naiyou[0] = "社員番号：".$data['402']."　社員名：".$data['403'];
             break;
+        case 'keihinyuryoku_5':
+            $sousa_gamen = "経費入力";
+            $naiyou[0] = "プロジェクトコード：".str_replace('-', '', $data['PJCODE'])."　プロジェクト名：".$data['PJNAME'];
+            break;
     }
     
     //操作履歴登録処理
@@ -3528,7 +3800,7 @@ function make_syuekihyocsv(){
 
     //社員原価、残業単価取得
     $con = dbconect();
-    $sql = "SELECT *FROM genkainfo;";
+    $sql = "SELECT syaininfo.4CODE,GENKA,ZANGYOTANKA FROM syaininfo LEFT JOIN genkainfo ON syaininfo.4CODE = genkainfo.4CODE;";
     $result = $con->query($sql);
     while($result_row = $result->fetch_array(MYSQLI_ASSOC))
     {
@@ -3625,10 +3897,12 @@ function make_syuekihyocsv(){
         //初期化
         $total_uriage = array('TOTAL' => 0,'01' => 0,'02' => 0,'03' => 0,'04' => 0,'05' => 0,'06' => 0,'07' => 0,'08' => 0,'09' => 0,'10' => 0,'11' => 0,'12' => 0);
         $total_genka = array('TOTAL' => 0,'01' => 0,'02' => 0,'03' => 0,'04' => 0,'05' => 0,'06' => 0,'07' => 0,'08' => 0,'09' => 0,'10' => 0,'11' => 0,'12' => 0);
+        $total_koutuhi = array('TOTAL' => 0,'01' => 0,'02' => 0,'03' => 0,'04' => 0,'05' => 0,'06' => 0,'07' => 0,'08' => 0,'09' => 0,'10' => 0,'11' => 0,'12' => 0);
+        $total_sonota = array('TOTAL' => 0,'01' => 0,'02' => 0,'03' => 0,'04' => 0,'05' => 0,'06' => 0,'07' => 0,'08' => 0,'09' => 0,'10' => 0,'11' => 0,'12' => 0);
         
         //PJ情報取得
         $sql = "SELECT *,CONCAT(KOKYAKUID,'-',TEAMID,'-',ANKENID,'-',EDABAN) AS PJCODE FROM projectinfo "
-                    ."LEFT JOIN kokyakuinfo USING(12CODE) LEFT JOIN teaminfo USING(12CODE) "
+                    ."LEFT JOIN kokyakuinfo ON projectinfo.12CODE = kokyakuinfo.12CODE LEFT JOIN teaminfo ON projectinfo.13CODE = teaminfo.13CODE "
                     ."WHERE (URIAGEMONTH BETWEEN '".$start."' AND '".$end."' OR KOKYAKUID LIKE '%X%' OR  KOKYAKUID LIKE '%Y%' OR KOKYAKUID LIKE '%Z%' "
                     ."OR (5PJSTAT = '1' AND CHAEGE)) "
                     ."AND CONCAT(KOKYAKUID,TEAMID,ANKENID) = '".$pj_list[$i]['PJCODE']."';";
@@ -3643,7 +3917,7 @@ function make_syuekihyocsv(){
         while($result_row = $result->fetch_array(MYSQLI_ASSOC))
         {
             //プロジェクト名表示
-            $csv .= '"'.$result_row['PJCODE'].'","'.$result_row['PJNAME'].'",,,,,,,,,,,,'.$stat_array[$result_row['5PJSTAT']];
+            $csv .= '"'.$result_row['PJCODE'].'",,"'.$result_row['PJNAME'].'",,,,,,,,,,,'.$stat_array[$result_row['5PJSTAT']];
             $csv .=  "\r\n";
             
             //項目名表示
@@ -3692,7 +3966,14 @@ function make_syuekihyocsv(){
                 }
                 else
                 {
-                    $csv .= ',';
+                    if($uriage['TOTAL'][$key] != 0)
+                    {
+                        $csv .= ',"'.$uriage['TOTAL'][$key].'"';
+                    }
+                    else
+                    {
+                        $csv .= ',';
+                    }                    
                 }
                 if($key == $end_month)
                 {
@@ -3726,6 +4007,28 @@ function make_syuekihyocsv(){
                     $zangyoutime[$syain_array[$s]['4CODE']] = array('TOTAL' => 0,'01' => 0,'02' => 0,'03' => 0,'04' => 0,'05' => 0,'06' => 0,'07' => 0,'08' => 0,'09' => 0,'10' => 0,'11' => 0,'12' => 0);    
                 }
             }
+
+            //経費取得
+            $koutuhi = array('TOTAL' => 0,'01' => 0,'02' => 0,'03' => 0,'04' => 0,'05' => 0,'06' => 0,'07' => 0,'08' => 0,'09' => 0,'10' => 0,'11' => 0,'12' => 0);
+            $sql4 = "SELECT SUM(charge) AS charge,date_format(month, '%m') AS month FROM keihiinfo WHERE 5CODE = '".$result_row['5CODE']."' AND kubun = '0' GROUP BY month;";
+            $result4 = $con->query($sql4);
+            while($result_row4 = $result4->fetch_array(MYSQLI_ASSOC))
+            {
+                $koutuhi[$result_row4['month']] += $result_row4['charge'];
+                $koutuhi['TOTAL'] += $result_row4['charge'];
+                $total_koutuhi[$result_row4['month']] += $result_row4['charge'];
+                $total_koutuhi['TOTAL'] += $result_row4['charge'];
+            }
+            $sonota = array('TOTAL' => 0,'01' => 0,'02' => 0,'03' => 0,'04' => 0,'05' => 0,'06' => 0,'07' => 0,'08' => 0,'09' => 0,'10' => 0,'11' => 0,'12' => 0);
+            $sql4 = "SELECT SUM(charge) AS charge,date_format(month, '%m') AS month FROM keihiinfo WHERE 5CODE = '".$result_row['5CODE']."' AND kubun = '1' GROUP BY month;";
+            $result4 = $con->query($sql4);
+            while($result_row4 = $result4->fetch_array(MYSQLI_ASSOC))
+            {
+                $sonota[$result_row4['month']] += $result_row4['charge'];
+                $sonota['TOTAL'] += $result_row4['charge'];
+                $total_sonota[$result_row4['month']] += $result_row4['charge'];
+                $total_sonota['TOTAL'] += $result_row4['charge'];
+            }
             
             //原価計算
             $genka = array();
@@ -3740,7 +4043,7 @@ function make_syuekihyocsv(){
                     $key = $month_keys[$k];
                     $end_month = date('m',strtotime('last day of last month'));
                     
-                    //社員別の原価,全体の原価
+                    //原価を求め、残業代を足す
                     if($flag == 0)
                     {
                         if(isset($genka_list[$syain_array[$s]['4CODE']]) && isset($keisu[$syain_array[$s]['4CODE']][$result_row['5CODE']][$key]))
@@ -3770,6 +4073,15 @@ function make_syuekihyocsv(){
                 }
             }
             
+            //原価に経費を足す
+            for($s = 0; $s < count($month_keys); $s++)
+            {
+                $genka['TOTAL'][$month_keys[$s]] += ($koutuhi[$month_keys[$s]] + $sonota[$month_keys[$s]]);
+                $genka['TOTAL']['TOTAL'] += ($koutuhi[$month_keys[$s]] + $sonota[$month_keys[$s]]);
+                $total_genka[$month_keys[$s]] += ($koutuhi[$month_keys[$s]] + $sonota[$month_keys[$s]]);
+                $total_genka['TOTAL'] += ($koutuhi[$month_keys[$s]] + $sonota[$month_keys[$s]]);
+            }
+            
             //原価表示
             $csv .= '"原価"';
             $flag = 0;
@@ -3779,24 +4091,31 @@ function make_syuekihyocsv(){
                 $end_month = date('m',strtotime('last day of last month'));
                 if($flag == 0)
                 {
-                    $csv .= ',"'.$genka['TOTAL'][$key].'"';
+                    $csv .= ',"'.round($genka['TOTAL'][$key]).'"';
                 }
                 else
                 {
-                    $csv .= ',';
+                    if($genka['TOTAL'][$key] != 0)
+                    {
+                        $csv .= ',"'.round($genka['TOTAL'][$key]).'"';
+                    }
+                    else
+                    {
+                        $csv .= ',';                        
+                    }
                 }
                 if($key == $end_month)
                 {
                     $flag = 1;
                 }
             }
-            $csv .= ',"'.$genka['TOTAL']['TOTAL'].'"';
+            $csv .= ',"'.round($genka['TOTAL']['TOTAL']).'"';
             $csv .=  "\r\n";
             
             //社員別原価表示
             for($s = 0; $s < count($syain_array); $s++)
             {
-                $csv .= '"'.$syain_array[$s]['STAFFNAME'].'"';
+                $csv .= '"　'.$syain_array[$s]['STAFFNAME'].'"';
                 $flag = 0;
                 for($k = 0; $k < count($month_keys); $k++)
                 {
@@ -3804,7 +4123,7 @@ function make_syuekihyocsv(){
                     $end_month = date('m',strtotime('last day of last month'));
                     if($flag == 0)
                     {
-                        $csv .= ',"'.$genka[$syain_array[$s]['4CODE']][$key].'"';
+                        $csv .= ',"'.round($genka[$syain_array[$s]['4CODE']][$key]).'"';
                     }
                     else
                     {
@@ -3815,14 +4134,14 @@ function make_syuekihyocsv(){
                         $flag = 1;
                     }
                 }
-                $csv .= ',"'.$genka[$syain_array[$s]['4CODE']]['TOTAL'].'"';
+                $csv .= ',"'.round($genka[$syain_array[$s]['4CODE']]['TOTAL']).'"';
                 $csv .=  "\r\n";
             }
             
             //残業時間表示
             for($s = 0; $s < count($syain_array); $s++)
             {
-                $csv .= '"'.$syain_array[$s]['STAFFNAME'].'残業"';
+                $csv .= '"　'.$syain_array[$s]['STAFFNAME'].'残業"';
                 $flag = 0;
                 for($k = 0; $k < count($month_keys); $k++)
                 {
@@ -3843,7 +4162,95 @@ function make_syuekihyocsv(){
                 }
                 $csv .= ',"'.($zangyoutime[$syain_array[$s]['4CODE']]['TOTAL'] * $zangyou_list[$syain_array[$s]['4CODE']]).'"';
                 $csv .=  "\r\n";
+            }           
+            
+            //経費
+            $csv .= "経費";
+            $flag = 0;
+            for($k = 0; $k < count($month_keys); $k++)
+            {
+                $key = $month_keys[$k];
+                $end_month = date('m',strtotime('last day of last month'));
+                if($flag == 0)
+                {
+                    $csv .= ',"'.($koutuhi[$month_keys[$k]] + $sonota[$month_keys[$k]]).'"';
+                }
+                else
+                {
+                    if(($koutuhi[$month_keys[$k]] + $sonota[$month_keys[$k]]) != 0)
+                    {
+                        $csv .= ',"'.($koutuhi[$month_keys[$k]] + $sonota[$month_keys[$k]]).'"';
+                    }
+                    else
+                    {
+                        $csv .= ',';
+                    }
+                }
+                if($key == $end_month)
+                {
+                    $flag = 1;
+                }
             }            
+            $csv .= ',"'.($koutuhi['TOTAL'] + $sonota['TOTAL']).'"';
+            $csv .=  "\r\n";
+            
+            $csv .= "　交通費";
+            $flag = 0;
+            for($k = 0; $k < count($month_keys); $k++)
+            {
+                $key = $month_keys[$k];
+                $end_month = date('m',strtotime('last day of last month'));
+                if($flag == 0)
+                {
+                    $csv .= ',"'.$koutuhi[$month_keys[$k]].'"';
+                }
+                else
+                {
+                    if($koutuhi[$month_keys[$k]] != 0)
+                    {
+                        $csv .= ',"'.$koutuhi[$month_keys[$k]].'"';
+                    }
+                    else
+                    {
+                        $csv .= ',';
+                    }
+                }
+                if($key == $end_month)
+                {
+                    $flag = 1;
+                }
+            }            
+            $csv .= ',"'.$koutuhi['TOTAL'].'"';
+            $csv .=  "\r\n";
+            
+            $csv .= "　その他";
+            $flag = 0;
+            for($k = 0; $k < count($month_keys); $k++)
+            {
+                $key = $month_keys[$k];
+                $end_month = date('m',strtotime('last day of last month'));
+                if($flag == 0)
+                {
+                    $csv .= ',"'.$sonota[$month_keys[$k]].'"';
+                }
+                else
+                {
+                    if($sonota[$month_keys[$k]] != 0)
+                    {
+                        $csv .= ',"'.$sonota[$month_keys[$k]].'"';
+                    }
+                    else
+                    {
+                        $csv .= ',';
+                    }
+                }
+                if($key == $end_month)
+                {
+                    $flag = 1;
+                }
+            }
+            $csv .= ',"'.$sonota['TOTAL'].'"';
+            $csv .=  "\r\n";
             
             //粗利
             $csv .= "粗利";
@@ -3854,18 +4261,25 @@ function make_syuekihyocsv(){
                 $end_month = date('m',strtotime('last day of last month'));
                 if($flag == 0)
                 {
-                    $csv .= ',"'.($uriage['TOTAL'][$key] - $genka['TOTAL'][$key]).'"';
+                    $csv .= ',"'.round($uriage['TOTAL'][$key] - $genka['TOTAL'][$key]).'"';
                 }
                 else
                 {
-                    $csv .= ',';
+                    if($uriage['TOTAL'][$key] != 0 || $genka['TOTAL'][$key] != 0)
+                    {
+                        $csv .= ',"'.round($uriage['TOTAL'][$key] - $genka['TOTAL'][$key]).'"';
+                    }
+                    else
+                    {
+                        $csv .= ',';
+                    }
                 }
                 if($key == $end_month)
                 {
                     $flag = 1;
                 }
             }
-            $csv .= ',"'.($uriage['TOTAL']['TOTAL'] - $genka['TOTAL']['TOTAL']).'"';
+            $csv .= ',"'.round($uriage['TOTAL']['TOTAL'] - $genka['TOTAL']['TOTAL']).'"';
             $csv .=  "\r\n";
 
             //倍率
@@ -3883,12 +4297,26 @@ function make_syuekihyocsv(){
                     }
                     else
                     {
-                        $csv .= ',"'.($uriage['TOTAL'][$key] / $genka['TOTAL'][$key]).'"';
+                        $csv .= ',"'.round($uriage['TOTAL'][$key] / $genka['TOTAL'][$key],2).'"';
                     }
                 }
                 else
                 {
-                    $csv .= ',';
+                    if($uriage['TOTAL'][$key] == 0 && $genka['TOTAL'][$key] == 0)
+                    {
+                        $csv .= ',';
+                    }
+                    else
+                    {
+                        if($uriage['TOTAL'][$key] == 0 || $genka['TOTAL'][$key] == 0)
+                        {
+                            $csv .= ',"0"';
+                        }
+                        else
+                        {
+                            $csv .= ',"'.round($uriage['TOTAL'][$key] / $genka['TOTAL'][$key],2).'"';
+                        }
+                    }
                 }
                 if($key == $end_month)
                 {
@@ -3901,14 +4329,14 @@ function make_syuekihyocsv(){
             }
             else
             {
-                $csv .= ',"'.($uriage['TOTAL']['TOTAL'] / $genka['TOTAL']['TOTAL']).'"';
+                $csv .= ',"'.round($uriage['TOTAL']['TOTAL'] / $genka['TOTAL']['TOTAL'],2).'"';
             }
             $csv .=  "\r\n";
             
             $csv .=  "\r\n";
         }
         //XX-XXXXXXXXの合計値を出力
-        $csv .= '"'.$pj_list[$i]['PJCODE'].'","合計"';
+        $csv .= '"'.$pj_list[$i]['PJCODE'].'",,"合計"';
         $csv .=  "\r\n";
         
         //項目名表示
@@ -3928,7 +4356,14 @@ function make_syuekihyocsv(){
             }
             else
             {
-                $csv .= ',';
+                if($total_uriage[$key] != 0)
+                {
+                    $csv .= ',"'.$total_uriage[$key].'"';
+                }
+                else
+                {
+                    $csv .= ',';
+                }
             }
             if($key == $end_month)
             {
@@ -3939,7 +4374,7 @@ function make_syuekihyocsv(){
         $csv .=  "\r\n";
         
         //原価
-        $csv .= '"売上"';
+        $csv .= '"原価"';
         $flag = 0;
         for($k = 0; $k < count($month_keys); $k++)
         {
@@ -3947,18 +4382,113 @@ function make_syuekihyocsv(){
             $end_month = date('m',strtotime('last day of last month'));
             if($flag == 0)
             {
-                $csv .= ',"'.$total_genka[$key].'"';
+                $csv .= ',"'.round($total_genka[$key]).'"';
             }
             else
             {
-                $csv .= ',';
+                if($total_genka[$key] != 0)
+                {
+                    $csv .= ',"'.round($total_genka[$key]).'"';
+                }
+                else
+                {
+                    $csv .= ',';
+                }
             }
             if($key == $end_month)
             {
                 $flag = 1;
             }
         }
-        $csv .= ',"'.$total_genka['TOTAL'].'"';
+        $csv .= ',"'.round($total_genka['TOTAL']).'"';
+        $csv .=  "\r\n";
+        
+        //経費
+        $csv .= "経費";
+        $flag = 0;
+        for($k = 0; $k < count($month_keys); $k++)
+        {
+            $key = $month_keys[$k];
+            $end_month = date('m',strtotime('last day of last month'));
+            if($flag == 0)
+            {
+                $csv .= ',"'.($total_koutuhi[$month_keys[$k]] + $total_sonota[$month_keys[$k]]).'"';
+            }
+            else
+            {
+                if(($total_koutuhi[$month_keys[$k]] + $total_sonota[$month_keys[$k]]) != 0)
+                {
+                    $csv .= ',"'.($total_koutuhi[$month_keys[$k]] + $total_sonota[$month_keys[$k]]).'"';
+                }
+                else
+                {
+                    $csv .= ',';
+                }
+            }
+            if($key == $end_month)
+            {
+                $flag = 1;
+            }
+        }
+        $csv .= ',"'.($total_koutuhi['TOTAL'] + $total_sonota['TOTAL']).'"';
+        $csv .=  "\r\n";
+        
+        $csv .= "　交通費";
+        $flag = 0;
+        for($k = 0; $k < count($month_keys); $k++)
+        {
+            $key = $month_keys[$k];
+            $end_month = date('m',strtotime('last day of last month'));
+            if($flag == 0)
+            {
+                $csv .= ',"'.$total_koutuhi[$month_keys[$k]].'"';
+            }
+            else
+            {
+                if($total_koutuhi[$month_keys[$k]] != 0)
+                {
+                    $csv .= ',"'.$total_koutuhi[$month_keys[$k]].'"';
+                }
+                else
+                {
+                    $csv .= ',';
+                }                
+            }
+            if($key == $end_month)
+            {
+                $flag = 1;
+            }
+        }
+        $csv .= ',"'.$total_koutuhi['TOTAL'].'"';        
+        $csv .=  "\r\n";
+        
+        $csv .= "　その他";
+        $flag = 0;
+        for($k = 0; $k < count($month_keys); $k++)
+        {
+            $key = $month_keys[$k];
+            $end_month = date('m',strtotime('last day of last month'));
+            if($flag == 0)
+            {
+                $csv .= ',"'.$total_sonota[$month_keys[$k]].'"';
+            }
+            else
+            {
+                if($total_sonota[$month_keys[$k]] != 0)
+                {
+                    $csv .= ',"'.$total_sonota[$month_keys[$k]].'"';
+                }
+                else
+                {
+                    $csv .= ',';
+                }                
+            }
+            if($key == $end_month)
+            {
+                $flag = 1;
+            }
+        }
+        $csv .= ',"'.$total_sonota['TOTAL'].'"';
         $csv .=  "\r\n";
         
         //粗利
@@ -3970,18 +4500,25 @@ function make_syuekihyocsv(){
             $end_month = date('m',strtotime('last day of last month'));
             if($flag == 0)
             {
-                $csv .= ',"'.($total_uriage[$key] - $total_genka[$key]).'"';
+                $csv .= ',"'.round($total_uriage[$key] - $total_genka[$key]).'"';
             }
             else
             {
-                $csv .= ',';
+                if($total_uriage[$key] != 0 || $total_genka[$key] != 0)
+                {
+                    $csv .= ',"'.round($total_uriage[$key] - $total_genka[$key]).'"';
+                }
+                else
+                {
+                    $csv .= ',';
+                }
             }
             if($key == $end_month)
             {
                 $flag = 1;
             }
         }
-        $csv .= ',"'.($total_uriage['TOTAL'] - $total_genka['TOTAL']).'"';
+        $csv .= ',"'.round($total_uriage['TOTAL'] - $total_genka['TOTAL']).'"';
         $csv .=  "\r\n";
         
         //倍率
@@ -3999,12 +4536,26 @@ function make_syuekihyocsv(){
                 }
                 else
                 {
-                    $csv .= ',"'.($total_uriage[$key] / $total_genka[$key]).'"';
+                    $csv .= ',"'.round($total_uriage[$key] / $total_genka[$key],2).'"';
                 }   
             }
             else
             {
-                $csv .= ',';
+                if($total_uriage[$key] == 0 && $total_genka[$key] == 0)
+                {
+                    $csv .= ',';
+                }
+                else
+                {
+                    if($total_uriage[$key] == 0 || $total_genka[$key] == 0)
+                    {
+                        $csv .= ',"0"';
+                    }
+                    else
+                    {
+                        $csv .= ',"'.round($total_uriage[$key] / $total_genka[$key],2).'"';
+                    }
+                }
             }
             if($key == $end_month)
             {
@@ -4017,7 +4568,7 @@ function make_syuekihyocsv(){
         }
         else
         {
-            $csv .= ',"'.($total_uriage['TOTAL'] / $total_genka['TOTAL']).'"';
+            $csv .= ',"'.round($total_uriage['TOTAL'] / $total_genka['TOTAL'],2).'"';
         }
         $csv .=  "\r\n";
 
@@ -4151,7 +4702,7 @@ function make_shikakaricsv(){
         
         //PJ情報取得
         $sql = "SELECT *,CONCAT(KOKYAKUID,'-',TEAMID,'-',ANKENID,'-',EDABAN) AS PJCODE FROM projectinfo "
-                    ."LEFT JOIN kokyakuinfo USING(12CODE) LEFT JOIN teaminfo USING(12CODE) "
+                    ."LEFT JOIN kokyakuinfo ON projectinfo.12CODE = kokyakuinfo.12CODE LEFT JOIN teaminfo ON projectinfo.13CODE = teaminfo.13CODE "
                     ."WHERE URIAGEMONTH BETWEEN '".$start."' AND '".$end."' "
                     ."AND (KOKYAKUID NOT LIKE '%X%' AND KOKYAKUID NOT LIKE '%Y%' AND KOKYAKUID NOT LIKE '%Z%') "
                     ."AND CHAEGE > 0 "
@@ -4167,7 +4718,7 @@ function make_shikakaricsv(){
         while($result_row = $result->fetch_array(MYSQLI_ASSOC))
         {
             //プロジェクト名表示
-            $csv .= '"'.$result_row['PJCODE'].'","'.$result_row['PJNAME'].'",,,,,,,,,,,,'.$stat_array[$result_row['5PJSTAT']];
+            $csv .= '"'.$result_row['PJCODE'].'",,"'.$result_row['PJNAME'].'",,,,,,,,,,,'.$stat_array[$result_row['5PJSTAT']];
             $csv .=  "\r\n";
             
             //項目名表示
@@ -4401,7 +4952,7 @@ function make_shikakaricsv(){
             $csv .=  "\r\n";
         }
         //XX-XXXXXXXXの合計値を出力
-        $csv .= '"'.$pj_list[$i]['PJCODE'].'","合計"';
+        $csv .= '"'.$pj_list[$i]['PJCODE'].'",,"合計"';
         $csv .=  "\r\n";
         
         //項目名表示

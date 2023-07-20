@@ -43,7 +43,7 @@
                 var judge = '<?php echo $judge ?>';
                 if(judge)
                 {
-                    if(confirm("処理内容正常確認。\nプロジェクトを終了しますがよろしいですか？"))
+                    if(confirm("処理内容正常確認。\nプロジェクトを終了キャンセルしますがよろしいですか？"))
                     {
                         location.href = "./pjagainComp.php";
                     }

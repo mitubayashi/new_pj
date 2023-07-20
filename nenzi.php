@@ -52,7 +52,7 @@
                 ‘O‰ñŽÀŽ{ŠúF<?php echo nenzi_rireki(); ?>
                 <table>
                     <tr>
-                        <td>ŒŽŽŸˆ—‘ÎÛŠú</td>
+                        <td>”NŽŸˆ—‘ÎÛŠú</td>
                         <td><?php echo period_pulldown_set($post);  ?></td>
                     </tr>
                 </table>

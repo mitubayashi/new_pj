@@ -38,6 +38,10 @@
             {
                 $url = "pjagain";
             }
+            elseif($filename == "keihi_5")
+            {
+                $url = "keihi";
+            }
             else
             {
                 $url = 'list';
@@ -162,6 +166,16 @@
         {
             kobetu_delete($_POST['edit_id']);
             $url = "edit";
+        }
+        if($key == "keihi")
+        {
+            $_SESSION['keihi'] = $_POST;
+            $url = "keihiComp";
+        }
+        if($key == "keihi_5_button")
+        {
+            $_SESSION['filename'] = "keihi_5";
+            $url = "keihi";
         }
     }
     header("location:".(empty($_SERVER['HTTPS'])? "http://" : "https://")

@@ -62,7 +62,7 @@
                     if( empty($listArray) !== FLASE){
                         $_SESSION['list'] = $listArray;
                     }
-                    if($_SESSION['filename'] == "editUser_5")
+                    if($_SESSION['filename'] == "editUser_5" || $_SESSION['filename'] == "keihinyuryoku_5")
                     {
                         $_SESSION['edit_id'] = $pre_url[3];
                     }

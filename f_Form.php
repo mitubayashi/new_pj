@@ -950,7 +950,6 @@ function makePROGRESSlist($post,$user){
         $progress_html .= "<td><input type='text' size='60' name='403' class='form_text disabled' value='".$user['STAFFNAME']."'></td>";
         $progress_html .= "</tr>";
     }
-
     
     //“ü—Í—“ì¬ˆ—
     $progress_html .= "<tr><td colspan='2'>";

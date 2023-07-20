@@ -84,12 +84,13 @@
 //        readfile($filepath);
     
     //ファイル出力
+    setcookie ("downloaded","yes","","/");
     $path = csv_write($csv);
     $date = date_format(date_create("NOW"), "Ymd");
-    $file_name = "List_".$form_ini[$filename]['title']."_".$date.".csv";
-    header('Content-Type: application/octet-stream'); 
-    header('Content-Disposition: attachment; filename="'.$file_name.'"'); 
-    header('Content-Length: '.filesize($path));
+    $file_name = 'List_'.$form_ini[$filename]['title'].'_'.$date.'.csv';
+    header("Content-Type: application/octet-stream"); 
+    header("Content-Disposition: attachment; filename=".$file_name); 
+    header("Content-Length: ".filesize($path));
     readfile($path);
     unlink($path);
 ?>

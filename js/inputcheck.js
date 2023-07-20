@@ -544,3 +544,59 @@ function kobetu_delete_check()
     }
     return judge;
 }
+
+function keihi_check()
+{
+    //変数
+    var judge = true;
+    
+    //入力内容チェック
+    for(var i = 0; i < 15; i++)
+    {
+        //エラーリセット
+        input_style('syain_' + i,true);
+        input_style('kubun_' + i,true);
+        input_style('charge_' + i,true); 
+        input_style('month_' + i,true); 
+        
+        //金額チェック
+        if(!kingaku_check('charge_' + i))
+        {
+            judge = false;
+        }
+        
+        //空欄チェック
+        var syain = document.getElementById('syain_' + i).value;
+        var kubun = document.getElementById('kubun_' + i).value;
+        var charge = document.getElementById('charge_' + i).value;
+        var month = document.getElementById('month_' + i).value;
+        if(syain == "" && kubun == "" && charge == "" && month == "")
+        {
+            continue;
+        }
+        else
+        {
+            if(syain == "")
+            {
+                input_style('syain_' + i,false);
+                judge = false;
+            }
+            if(kubun == "")
+            {
+                input_style('kubun_' + i,false);
+                judge = false;
+            }
+            if(charge == "")
+            {
+                input_style('charge_' + i,false); 
+                judge = false;
+            }        
+            if(month == "")
+            {
+                input_style('month_' + i,false); 
+                judge = false;
+            }
+        }
+    }
+    return judge;
+}
