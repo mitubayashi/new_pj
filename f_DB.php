@@ -325,27 +325,32 @@ function progress_fileinsert_check($post){
     $file = fopen("temp/tempfileinsert.txt", "r");
     if($file)
     {
+        $count = 0;
         while ($line = fgets($file)) 
         {
-            //処理
-            $con = dbconect();
-            $strsub = explode(",", $line);
-            $errorinfo[$counter]['STAFFID'] = str_pad($strsub[0], 3, "0", STR_PAD_LEFT);
-            $errorinfo[$counter]['SAGYOUDATE'] = $strsub[1];
-            $errorinfo[$counter]['PJCODE'] = $strsub[2];
-            $errorinfo[$counter]['KOUTEIID'] = str_pad($strsub[3], 3, "0", STR_PAD_LEFT);	
-            $errorinfo[$counter]['TEIZITIME'] = $strsub[4];
-            $errorinfo[$counter]['ZANGYOUTIME'] = $strsub[5];
-            $errorinfo[$counter]['errormsg'] = "正常";
-            if(isset($teizicheck[$strsub[0]][$strsub[1]]))
+            if($count != 0)
             {
-                $teizicheck[$strsub[0]][$strsub[1]] += $strsub[4];
+                //処理
+                $con = dbconect();
+                $strsub = explode(",", $line);
+                $errorinfo[$counter]['STAFFID'] = str_pad($strsub[0], 6, "0", STR_PAD_LEFT);
+                $errorinfo[$counter]['SAGYOUDATE'] = $strsub[1];
+                $errorinfo[$counter]['PJCODE'] = $strsub[2];
+                $errorinfo[$counter]['KOUTEIID'] = str_pad($strsub[3], 3, "0", STR_PAD_LEFT);	
+                $errorinfo[$counter]['TEIZITIME'] = $strsub[4];
+                $errorinfo[$counter]['ZANGYOUTIME'] = $strsub[5];
+                $errorinfo[$counter]['errormsg'] = "正常";
+                if(isset($teizicheck[$strsub[0]][$strsub[1]]))
+                {
+                    $teizicheck[$strsub[0]][$strsub[1]] += $strsub[4];
+                }
+                else
+                {
+                    $teizicheck[$strsub[0]][$strsub[1]] = $strsub[4];
+                }
+                $counter++;
             }
-            else
-            {
-                $teizicheck[$strsub[0]][$strsub[1]] = $strsub[4];
-            }
-            $counter++;
+            $count++;
         }
         
         for($i = 0; $i < count($errorinfo); $i++)
@@ -379,7 +384,7 @@ function progress_fileinsert_check($post){
             $sql = "SELECT 6CODE,5PJSTAT FROM projectditealinfo ";
             $sql .= "LEFT JOIN projectinfo USING(5CODE) LEFT JOIN kokyakuinfo USING(12CODE) ";
             $sql .= "LEFT JOIN teaminfo USING(13CODE) LEFT JOIN syaininfo USING(4CODE)";
-            $sql .= "WHERE STAFFID = '".$errorinfo[$i]['STAFFID']."' AND CONCAT(KOKYAKUID,TEAMID,ANKENID,EDABAN) = '".$errorinfo[$i]['PJCODE']."';";
+            $sql .= "WHERE STAFFID = '".$errorinfo[$i]['STAFFID']."' AND CONCAT(KOKYAKUID,TEAMID,ANKENID,EDABAN) = '".str_replace('-','',$errorinfo[$i]['PJCODE'])."';";
             $result = $con->query($sql);
             if($result->num_rows == 0)
             {
@@ -433,35 +438,38 @@ function progress_fileinsert($post){
     $file = fopen("temp/tempfileinsert.txt", "r");
     if($file)
     {
+        $count = 0;
         while ($line = fgets($file)) 
         {
-            $strsub = explode(",", $line);
-            
-            //工程情報取得
-            $con = dbconect();
-            $sql = "SELECT 3CODE FROM kouteiinfo WHERE KOUTEIID = '".$strsub[3]."';";
-            $result = $con->query($sql);
-            while($result_row = $result->fetch_array(MYSQLI_ASSOC))
+            if($count != 0)
             {
-                $code3 = $result_row['3CODE'];
-            }
+                $strsub = explode(",", $line);
             
-            //PJ情報取得
-            $sql = "SELECT 6CODE FROM projectditealinfo AS projectditealinfo ";
-            $sql .= "LEFT JOIN projectinfo AS projectinfo ON projectditealinfo.5CODE = projectinfo.5CODE ";
-            $sql .= "LEFT JOIN kokyakuinfo AS kokyakuinfo ON kokyakuinfo.12CODE = projectinfo.5CODE ";
-            $sql .= "LEFT JOIN teaminfo AS teaminfo ON teaminfo.13CODE = projectinfo.13CODE ";
-            $sql .= "LEFT JOIN syaininfo AS syaininfo ON syaininfo.4CODE = projectditealinfo.4CODE ";
-            $sql .= "WHERE syaininfo.STAFFID = '".$strsub[0]."' AND CONCAT(substring(KOKYAKUID,TEAMID,ANKENID,EDABAN) = '".$strsub[2]."';";
-            $result = $con->query($sql);
-            while($result_row = $result->fetch_array(MYSQLI_ASSOC))
-            {
-                $code6 = $result_row['6CODE'];
+                //工程情報取得
+                $con = dbconect();
+                $sql = "SELECT 3CODE FROM kouteiinfo WHERE KOUTEIID = '".$strsub[3]."';";
+                $result = $con->query($sql);
+                while($result_row = $result->fetch_array(MYSQLI_ASSOC))
+                {
+                    $code3 = $result_row['3CODE'];
+                }
+
+                //PJ情報取得
+                $sql = "SELECT 6CODE,5PJSTAT FROM projectditealinfo ";
+                $sql .= "LEFT JOIN projectinfo USING(5CODE) LEFT JOIN kokyakuinfo USING(12CODE) ";
+                $sql .= "LEFT JOIN teaminfo USING(13CODE) LEFT JOIN syaininfo USING(4CODE)";
+                $sql .= "WHERE STAFFID = '".$strsub[0]."' AND CONCAT(KOKYAKUID,TEAMID,ANKENID,EDABAN) = '".str_replace('-','',$strsub[2])."';";
+                $result = $con->query($sql);
+                while($result_row = $result->fetch_array(MYSQLI_ASSOC))
+                {
+                    $code6 = $result_row['6CODE'];
+                }
+
+                //登録処理
+                $sql = "INSERT INTO progressinfo (3CODE,6CODE,SAGYOUDATE,TEIZITIME,ZANGYOUTIME) VALUES ('".$code3."','".$code6."','".$strsub[1]."',".$strsub[4].",".$strsub[5].");";
+                $result = $con->query($sql);
             }
-            
-            //登録処理
-            $sql = "INSERT INTO progressinfo (3CODE,6CODE,SAGYOUDATE,TEIZITIME,ZANGYOUTIME) VALUES ('".$code3."','".$code6."','".$strsub[1]."',".$strsub[4].",".$strsub[5].");";
-            $result = $con->query($sql);
+            $count++;
         }
     }
 }
@@ -1353,19 +1361,19 @@ function makekeihi_form($edit_id)
         if($kubun == '')
         {
             $list_html .= "<option value='' selected>指定なし</option>";
-            $list_html .= "<option value='0'>交通費</option>";
+            $list_html .= "<option value='0'>旅費交通費</option>";
             $list_html .= "<option value='1'>その他</option>";        
         }
         elseif($kubun == '0')
         {
             $list_html .= "<option value=''>指定なし</option>";
-            $list_html .= "<option value='0' selected>交通費</option>";
+            $list_html .= "<option value='0' selected>旅費交通費</option>";
             $list_html .= "<option value='1'>その他</option>";                    
         }        
         else
         {
             $list_html .= "<option value=''>指定なし</option>";
-            $list_html .= "<option value='0'>交通費</option>";
+            $list_html .= "<option value='0'>旅費交通費</option>";
             $list_html .= "<option value='1' selected>その他</option>";                       
         }
         $list_html .= "</select>";
@@ -3607,6 +3615,10 @@ function insert_sousarireki($sousakubun,$data)
             $sousa_gamen = "経費入力";
             $naiyou[0] = "プロジェクトコード：".str_replace('-', '', $data['PJCODE'])."　プロジェクト名：".$data['PJNAME'];
             break;
+        case 'keihifileinsert_5':
+            $sousa_gamen = "経費情報取込";
+            $naiyou[0] = "CSV取り込み　経費情報登録";
+            break;
     }
     
     //操作履歴登録処理
@@ -3904,7 +3916,7 @@ function make_syuekihyocsv(){
         $sql = "SELECT *,CONCAT(KOKYAKUID,'-',TEAMID,'-',ANKENID,'-',EDABAN) AS PJCODE FROM projectinfo "
                     ."LEFT JOIN kokyakuinfo ON projectinfo.12CODE = kokyakuinfo.12CODE LEFT JOIN teaminfo ON projectinfo.13CODE = teaminfo.13CODE "
                     ."WHERE (URIAGEMONTH BETWEEN '".$start."' AND '".$end."' OR KOKYAKUID LIKE '%X%' OR  KOKYAKUID LIKE '%Y%' OR KOKYAKUID LIKE '%Z%' "
-                    ."OR (5PJSTAT = '1' AND CHAEGE)) "
+                    ."OR (5PJSTAT = '1')) "
                     ."AND CONCAT(KOKYAKUID,TEAMID,ANKENID) = '".$pj_list[$i]['PJCODE']."';";
         $result = $con->query($sql);
         
@@ -4194,7 +4206,7 @@ function make_syuekihyocsv(){
             $csv .= ',"'.($koutuhi['TOTAL'] + $sonota['TOTAL']).'"';
             $csv .=  "\r\n";
             
-            $csv .= "　交通費";
+            $csv .= "　旅費交通費";
             $flag = 0;
             for($k = 0; $k < count($month_keys); $k++)
             {
@@ -4703,9 +4715,9 @@ function make_shikakaricsv(){
         //PJ情報取得
         $sql = "SELECT *,CONCAT(KOKYAKUID,'-',TEAMID,'-',ANKENID,'-',EDABAN) AS PJCODE FROM projectinfo "
                     ."LEFT JOIN kokyakuinfo ON projectinfo.12CODE = kokyakuinfo.12CODE LEFT JOIN teaminfo ON projectinfo.13CODE = teaminfo.13CODE "
-                    ."WHERE URIAGEMONTH BETWEEN '".$start."' AND '".$end."' "
+                    ."WHERE (URIAGEMONTH BETWEEN '".$start."' AND '".$end."' OR URIAGEMONTH IS NULL)"
                     ."AND (KOKYAKUID NOT LIKE '%X%' AND KOKYAKUID NOT LIKE '%Y%' AND KOKYAKUID NOT LIKE '%Z%') "
-                    ."AND CHAEGE > 0 "
+                    ."AND 5PJSTAT = '0' "
                     ."AND CONCAT(KOKYAKUID,TEAMID,ANKENID) = '".$pj_list[$i]['PJCODE']."';";
         $result = $con->query($sql);
         
@@ -4738,6 +4750,10 @@ function make_shikakaricsv(){
                 if(!isset($uriage[$result_row2['4CODE']]))
                 {
                     $uriage[$result_row2['4CODE']] = array('TOTAL' => 0,'01' => 0,'02' => 0,'03' => 0,'04' => 0,'05' => 0,'06' => 0,'07' => 0,'08' => 0,'09' => 0,'10' => 0,'11' => 0,'12' => 0);    
+                }
+                if(!isset($result_row2['MONTH']))
+                {
+                    $result_row2['MONTH'] = '05';
                 }
                 $uriage[$result_row2['4CODE']][$result_row2['MONTH']] += $result_row2['DETALECHARGE'];
                 $uriage[$result_row2['4CODE']]['TOTAL'] += $result_row2['DETALECHARGE'];
@@ -4850,14 +4866,14 @@ function make_shikakaricsv(){
                 $key = $month_keys[$k];
                 if($k >= $start_month_count && $k <= $end_month_count)
                 {
-                    $csv .= ',"'.$genka['TOTAL'][$key].'"';
+                    $csv .= ',"'.round($genka['TOTAL'][$key]).'"';
                 }
                 else
                 {
                     $csv .= ',';
                 }
             }
-            $csv .= ',"'.$genka['TOTAL']['TOTAL'].'"';
+            $csv .= ',"'.round($genka['TOTAL']['TOTAL']).'"';
             $csv .=  "\r\n";
             
             //社員別原価表示
@@ -4869,14 +4885,14 @@ function make_shikakaricsv(){
                     $key = $month_keys[$k];
                     if($k >= $start_month_count && $k <= $end_month_count)
                     {
-                        $csv .= ',"'.$genka[$syain_array[$s]['4CODE']][$key].'"';
+                        $csv .= ',"'.round($genka[$syain_array[$s]['4CODE']][$key]).'"';
                     }
                     else
                     {
                         $csv .= ',';
                     }
                 }
-                $csv .= ',"'.$genka[$syain_array[$s]['4CODE']]['TOTAL'].'"';
+                $csv .= ',"'.round($genka[$syain_array[$s]['4CODE']]['TOTAL']).'"';
                 $csv .=  "\r\n";
             }
             
@@ -4908,14 +4924,14 @@ function make_shikakaricsv(){
                 $key = $month_keys[$k];
                 if($k >= $start_month_count && $k <= $end_month_count)
                 {
-                    $csv .= ',"'.($uriage['TOTAL'][$key] - $genka['TOTAL'][$key]).'"';
+                    $csv .= ',"'.round($uriage['TOTAL'][$key] - $genka['TOTAL'][$key]).'"';
                 }
                 else
                 {
                     $csv .= ',';
                 }
             }
-            $csv .= ',"'.($uriage['TOTAL']['TOTAL'] - $genka['TOTAL']['TOTAL']).'"';
+            $csv .= ',"'.round($uriage['TOTAL']['TOTAL'] - $genka['TOTAL']['TOTAL']).'"';
             $csv .=  "\r\n";
 
             //倍率
@@ -4931,7 +4947,7 @@ function make_shikakaricsv(){
                     }
                     else
                     {
-                        $csv .= ',"'.($uriage['TOTAL'][$key] / $genka['TOTAL'][$key]).'"';
+                        $csv .= ',"'.round($uriage['TOTAL'][$key] / $genka['TOTAL'][$key],2).'"';
                     }
                 }
                 else
@@ -4945,7 +4961,7 @@ function make_shikakaricsv(){
             }
             else
             {
-                $csv .= ',"'.($uriage['TOTAL']['TOTAL'] / $genka['TOTAL']['TOTAL']).'"';
+                $csv .= ',"'.round($uriage['TOTAL']['TOTAL'] / $genka['TOTAL']['TOTAL'],2).'"';
             }
             $csv .=  "\r\n";
             
@@ -4983,14 +4999,14 @@ function make_shikakaricsv(){
             $key = $month_keys[$k];
             if($k >= $start_month_count && $k <= $end_month_count)
             {
-                $csv .= ',"'.$total_genka[$key].'"';
+                $csv .= ',"'.round($total_genka[$key]).'"';
             }
             else
             {
                 $csv .= ',';
             }
         }
-        $csv .= ',"'.$total_genka['TOTAL'].'"';
+        $csv .= ',"'.round($total_genka['TOTAL']).'"';
         $csv .=  "\r\n";
         
         //粗利
@@ -5000,14 +5016,14 @@ function make_shikakaricsv(){
             $key = $month_keys[$k];
             if($k >= $start_month_count && $k <= $end_month_count)
             {
-                $csv .= ',"'.($total_uriage[$key] - $total_genka[$key]).'"';
+                $csv .= ',"'.round($total_uriage[$key] - $total_genka[$key]).'"';
             }
             else
             {
                 $csv .= ',';
             }
         }
-        $csv .= ',"'.($total_uriage['TOTAL'] - $total_genka['TOTAL']).'"';
+        $csv .= ',"'.round($total_uriage['TOTAL'] - $total_genka['TOTAL']).'"';
         $csv .=  "\r\n";
         
         //倍率
@@ -5023,7 +5039,7 @@ function make_shikakaricsv(){
                 }
                 else
                 {
-                    $csv .= ',"'.($total_uriage[$key] / $total_genka[$key]).'"';
+                    $csv .= ',"'.round($total_uriage[$key] / $total_genka[$key],2).'"';
                 }   
             }
             else
@@ -5037,7 +5053,7 @@ function make_shikakaricsv(){
         }
         else
         {
-            $csv .= ',"'.($total_uriage['TOTAL'] / $total_genka['TOTAL']).'"';
+            $csv .= ',"'.round($total_uriage['TOTAL'] / $total_genka['TOTAL'],2).'"';
         }
         $csv .=  "\r\n";
 
@@ -5046,4 +5062,144 @@ function make_shikakaricsv(){
     return $csv;
 }
 
+/************************************************************************************************************
+function keihi_fileinsert_check($post)
+
+引数		$post						登録情報
+
+戻り値		なし
+************************************************************************************************************/
+function keihi_fileinsert_check($post){
+    
+    //変数
+    $errorinfo = array();
+    $counter = 0;
+    $file = fopen("temp/tempfileinsert.txt", "r");
+    if($file)
+    {
+        $con = dbconect();
+        $count = 0;
+        //データの読み取り
+        while($line = fgets($file))
+        {
+            if($count != 0)
+            {
+                //データを格納
+                $strsub = explode(",", $line);
+                $errorinfo[$counter]['PJCODE'] = $strsub[0];
+                $errorinfo[$counter]['STAFFID'] = $strsub[1];
+                $errorinfo[$counter]['KOUTUHI'] = $strsub[2];
+                $errorinfo[$counter]['SONOTA'] = $strsub[3];
+                $errorinfo[$counter]['HIDUKE'] = $strsub[4];
+                $errorinfo[$counter]['errormsg'] = "正常";
+
+                //プロジェクトコードチェック
+                $sql = "SELECT 6CODE,5PJSTAT FROM projectditealinfo ";
+                $sql .= "LEFT JOIN projectinfo USING(5CODE) LEFT JOIN kokyakuinfo USING(12CODE) ";
+                $sql .= "LEFT JOIN teaminfo USING(13CODE) LEFT JOIN syaininfo USING(4CODE)";
+                $sql .= "WHERE STAFFID = '".$errorinfo[$counter]['STAFFID']."' AND CONCAT(KOKYAKUID,TEAMID,ANKENID,EDABAN) = '".str_replace('-', '', $errorinfo[$counter]['PJCODE'])."';";
+                $result = $con->query($sql);
+                if($result->num_rows == 0)
+                {
+                    $errorinfo[$counter]['errormsg'] = '該当プロジェクトが登録されていません。'; 
+                }
+
+                //社員番号チェック
+                $sql = "SELECT *FROM syaininfo WHERE LUSERNAME IS NOT NULL AND LUSERPASS IS NOT NULL AND STAFFID = '".$errorinfo[$counter]['STAFFID']."';";
+                $result = $con->query($sql);
+                if($result->num_rows == 0)
+                {
+                    $errorinfo[$counter]['errormsg'] = '社員番号が登録されていません。'; 
+                }
+
+                //交通費半角数字チェック
+                if(!preg_match( '/^[0-9]+$/',$errorinfo[$counter]['KOUTUHI'] ))
+                {
+                    $errorinfo[$counter]['errormsg'] = '旅費交通費に半角数字以外が入力されています。';
+                }
+
+                //その他半角数字チェック
+                if(!preg_match( '/^[0-9]+$/',$errorinfo[$counter]['SONOTA'] ))
+                {
+                    $errorinfo[$counter]['errormsg'] = 'その他に半角数字以外が入力されています。';
+                }
+
+                //交通費桁数チェック
+                if(strlen($errorinfo[$counter]['KOUTUHI']) > 7)
+                {
+                    $errorinfo[$counter]['errormsg'] = '旅費交通費が7桁を超えています。';
+                }
+
+                //その他桁数チェック
+                if(strlen($errorinfo[$counter]['SONOTA']) > 7)
+                {
+                    $errorinfo[$counter]['errormsg'] = 'その他が7桁を超えています。';
+                }
+                $counter++;
+            }
+            $count++;
+        }
+    }
+    return $errorinfo;
+}
+
+/************************************************************************************************************
+function keihi_fileinsert($post)
+
+引数		$post						登録情報
+
+戻り値		なし
+************************************************************************************************************/
+function keihi_fileinsert($post){
+    
+    $file = fopen("temp/tempfileinsert.txt", "r");
+    $con = dbconect();
+    if($file)
+    {
+        $count = 0;
+        while ($line = fgets($file)) 
+        {
+            if($count != 0)
+            {
+                $strsub = explode(",", $line);
+                //PJ情報取得
+                $sql = "SELECT 5CODE FROM projectinfo ";
+                $sql .= "LEFT JOIN kokyakuinfo AS kokyakuinfo ON projectinfo.12CODE = kokyakuinfo.12CODE ";
+                $sql .= "LEFT JOIN teaminfo AS teaminfo ON projectinfo.13CODE = teaminfo.13CODE ";
+                $sql .= "WHERE CONCAT(KOKYAKUID,TEAMID,ANKENID,EDABAN) = '".str_replace('-', '', $strsub[0])."';";
+                $result = $con->query($sql);
+                while($result_row = $result->fetch_array(MYSQLI_ASSOC))
+                {
+                    $code5 = $result_row['5CODE'];
+                }
+
+                //社員情報取得
+                $sql = "SELECT 4CODE FROM syaininfo ";
+                $sql .= "WHERE STAFFID = '".$strsub[1]."';";
+                $result = $con->query($sql);
+                while($result_row = $result->fetch_array(MYSQLI_ASSOC))
+                {
+                    $code4 = $result_row['4CODE'];
+                }
+
+                //日付情報作成
+                $date = date('Y-m-01', strtotime($strsub[4]));
+
+                if($strsub[2] != 0 && $strsub[2] != "")
+                {
+                    $sql = "INSERT INTO keihiinfo(5CODE,4CODE,charge,kubun,month) ";
+                    $sql .= "VALUES('".$code5."','".$code4."','".$strsub[2]."','0','".$date."');";
+                    $con->query($sql);
+                }
+                if($strsub[3] != 0 && $strsub[3] != "")
+                {
+                    $sql = "INSERT INTO keihiinfo(5CODE,4CODE,charge,kubun,month) ";
+                    $sql .= "VALUES('".$code5."','".$code4."','".$strsub[3]."','1','".$date."');";
+                    $con->query($sql);
+                }
+            }
+            $count++;
+        }
+    }
+}
 ?>

@@ -65,6 +65,12 @@
                 $_SESSION['insert'] = null;
                 $url = "TOP";
             }
+            elseif($filename_array[0] == 'keihifileinsert')
+            {
+                $_SESSION['insert'] = null;
+                $url = "keihi";
+                $_SESSION['filename'] = "keihi_5";
+            }
             else
             {
                 $url = "list";
@@ -101,7 +107,14 @@
             move_uploaded_file( $_FILES['inpath']['tmp_name'],"./temp/tempfileinsert.txt");
             $_SESSION['files'] = $_FILES;
             $_SESSION['fileinsert'] = $_POST;
-            $url = "FileinsertCheck";  
+            if($filename == "keihifileinsert_5")
+            {
+                $url = "keihifileCheck";
+            }
+            else
+            {
+                $url = "FileinsertCheck";  
+            }
         }
         if($key == 'pjend')
         {
@@ -176,6 +189,11 @@
         {
             $_SESSION['filename'] = "keihi_5";
             $url = "keihi";
+        }
+        if($key == "keihifileinsert_5_button")
+        {
+            $_SESSION['filename'] = "keihifileinsert_5";
+            $url = "keihifileinsert";
         }
     }
     header("location:".(empty($_SERVER['HTTPS'])? "http://" : "https://")

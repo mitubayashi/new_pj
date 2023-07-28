@@ -57,7 +57,7 @@
                     echo "<input type ='submit' value = '戻る' name = 'back' class = 'list_button' onClick ='isCancel = true;'>";
                     echo "<br><br><br>";
                     echo "<FONT color='red'>ユーザ単位の工数情報が取り込みできます。取り込み情報は</FONT><br><br>";
-                    echo "<FONT color='red'>社員番号、日付(yyyy/mm/dd)、PJコード(12桁)、工程番号、定時時間、残業時間<br>をCSV形式で作成してください。</FONT><br><br>";
+                    echo "<FONT color='red'>社員番号、日付(yyyy/mm/dd)、PJコード(12桁ハイフンあり)、工程番号、定時時間、残業時間<br>をCSV形式で作成してください。</FONT><br><br>";
                     echo "<FONT color='red'>同一日付にすでに登録データが存在する場合は存在しているデータは破棄され取り込みデータが正しいデータとして登録されます。</FONT><br><br>";
                 ?>
             </form>

@@ -41,6 +41,7 @@
     
     //一覧表ボタン作成処理
     $list .= "<input type='button' value='検索条件' class='list_button' onclick='open_sech_modal();'>";
+    $list .= "<input type='submit' value='経費情報取込' class='list_button' name='keihifileinsert_5_button'>";
     $list .= '</div>';
     
     //経費一覧表作成
