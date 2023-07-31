@@ -26,7 +26,6 @@
     $_SESSION['pre_post'] = $_SESSION['post'];
     $_SESSION['post'] = null;
     unset($_SESSION['fileinsert']);
-    $filename = $_SESSION['filename'];
     $filename_array = explode('_',$filename);
     $_SESSION['filename'] = $filename_array[0]."_2";
     if($filename_array[0] == "TOP")

@@ -2415,7 +2415,16 @@ function pjCheck($post){
             $sql .= "LEFT JOIN projectinfo USING(5CODE) LEFT JOIN syaininfo USING(4CODE) ";
             $sql .= "LEFT JOIN kouteiinfo USING(3CODE) WHERE 5CODE = ".$pjid[$i]." order by SAGYOUDATE ;";            
             $result = $con->query($sql) or ($judge = true);																		// クエリ発行
-            if(($result->num_rows) > 0)
+            
+            //枝番の取得
+            $pj_sql = "SELECT SUBSTR(EDABAN,1,1) AS EDABAN FROM projectinfo WHERE 5CODE = '".$pjid[$i]."';";
+            $pj_result = $con->query($pj_sql) or ($judge = true);
+            while($pj_result_row = $pj_result->fetch_array(MYSQLI_ASSOC))
+            {
+                $edaban = $pj_result_row['EDABAN'];
+            }
+            
+            if(($result->num_rows) > 0 || $edaban == $system_ini['pjend_edaban']['edaban'])
             {
                 //プロジェクトの開始日と終了日付取得
                 $sql = "SELECT MIN(SAGYOUDATE),MAX(SAGYOUDATE) FROM progressinfo LEFT JOIN projectditealinfo USING(6CODE) ";
@@ -2547,47 +2556,65 @@ function pjend($post){
         $sql .= "LEFT JOIN kokyakuinfo USING(12CODE)  LEFT JOIN teaminfo USING(13CODE) ";
         $sql .= "WHERE projectditealinfo.5CODE = ".$pjid[$i]." order by SAGYOUDATE ;";
         $result = $con->query($sql);
-        while($result_row = $result->fetch_array(MYSQLI_ASSOC))
+        if(($result->num_rows) > 0)
         {
-            //社員別プロジェクトコード(6CODE)ごとに多次元配列に格納
-            if(isset($time[$result_row['6CODE']]))
+            while($result_row = $result->fetch_array(MYSQLI_ASSOC))
             {
-                $time[$result_row['6CODE']][count($time[$result_row['6CODE']])] = $result_row;
+                //社員別プロジェクトコード(6CODE)ごとに多次元配列に格納
+                if(isset($time[$result_row['6CODE']]))
+                {
+                    $time[$result_row['6CODE']][count($time[$result_row['6CODE']])] = $result_row;
+                }
+                else
+                {
+                    $time[$result_row['6CODE']][0] = $result_row;
+                }
             }
-            else
+            $keyarray = array_keys($time);
+            foreach($keyarray as $key)
             {
-                $time[$result_row['6CODE']][0] = $result_row;
+                //$key(=6CODE)が変わるごとに初期化
+                $teizi = 0;
+                $zangyou = 0;
+                unset($before);
+                //実績時間計算
+                for($k = 0; $k < count($time[$key]); $k++)
+                {
+                    $teizi += $time[$key][$k]['TEIZITIME'];
+                    $zangyou += $time[$key][$k]['ZANGYOUTIME'];
+                }
+                //終了PJ登録
+                $pjcode = $time[$key][0]['KOKYAKUID'].$time[$key][0]['TEAMID'].$time[$key][0]['ANKENID'].$time[$key][0]['EDABAN'];
+                $pjname = $time[$key][0]['PJNAME'];
+                $charge = $time[$key][0]['DETALECHARGE'];
+                $total = $teizi + $zangyou;
+                $performance = round($charge/$total,3);
+                $sql_end = "INSERT INTO endpjinfo (6CODE,TEIJITIME,ZANGYOTIME,TOTALTIME,PERFORMANCE,8ENDDATE,PJCODE,PJNAME) VALUES "
+                            ."(".$key.",".$teizi.",".$zangyou.",".$total.",".$performance.","."'".$post['day'.$pjid[$i]]."'".","."'".$pjcode."'".","."'".$pjname."'".") ;";
+                $result = $con->query($sql_end);
+                if(!empty($upcode6))
+                {
+                    $upcode6 .= $key.",";
+                }
+                else
+                {
+                    $upcode6 = $key.",";
+                }
             }
         }
-        $keyarray = array_keys($time);
-        foreach($keyarray as $key)
+        else
         {
-            //$key(=6CODE)が変わるごとに初期化
-            $teizi = 0;
-            $zangyou = 0;
-            unset($before);
-            //実績時間計算
-            for($k = 0; $k < count($time[$key]); $k++)
+            $pj_sql = "SELECT *,CONCAT(KOKYAKUID,TEAMID,ANKENID,EDABAN) AS PJCODE FROM projectditealinfo ";
+            $pj_sql .= " LEFT JOIN projectinfo ON projectditealinfo.5CODE = projectinfo.5CODE ";
+            $pj_sql .= " LEFT JOIN kokyakuinfo AS kokyakuinfo ON projectinfo.12CODE = kokyakuinfo.12CODE ";
+            $pj_sql .= " LEFT JOIN teaminfo AS teaminfo ON projectinfo.13CODE = teaminfo.13CODE ";
+            $pj_sql .= "WHERE projectditealinfo.5CODE = '".$pjid[$i]."';";
+            $pj_result = $con->query($pj_sql);
+            while($pj_result_row = $pj_result->fetch_array(MYSQLI_ASSOC))
             {
-                $teizi += $time[$key][$k]['TEIZITIME'];
-                $zangyou += $time[$key][$k]['ZANGYOUTIME'];
-            }
-            //終了PJ登録
-            $pjcode = $time[$key][0]['KOKYAKUID'].$time[$key][0]['TEAMID'].$time[$key][0]['ANKENID'].$time[$key][0]['EDABAN'];
-            $pjname = $time[$key][0]['PJNAME'];
-            $charge = $time[$key][0]['DETALECHARGE'];
-            $total = $teizi + $zangyou;
-            $performance = round($charge/$total,3);
-            $sql_end = "INSERT INTO endpjinfo (6CODE,TEIJITIME,ZANGYOTIME,TOTALTIME,PERFORMANCE,8ENDDATE,PJCODE,PJNAME) VALUES "
-                        ."(".$key.",".$teizi.",".$zangyou.",".$total.",".$performance.","."'".$post['day'.$pjid[$i]]."'".","."'".$pjcode."'".","."'".$pjname."'".") ;";
-            $result = $con->query($sql_end);
-            if(!empty($upcode6))
-            {
-                $upcode6 .= $key.",";
-            }
-            else
-            {
-                $upcode6 = $key.",";
+                $sql_end = "INSERT INTO endpjinfo (6CODE,TEIJITIME,ZANGYOTIME,TOTALTIME,PERFORMANCE,8ENDDATE,PJCODE,PJNAME) VALUES "
+                            ."(".$pj_result_row['6CODE'].",0.00,0.00,0.00,0.000,"."'".$post['day'.$pjid[$i]]."'".","."'".$pj_result_row['PJCODE']."'".","."'".$pj_result_row['PJNAME']."'".") ;";
+                $result = $con->query($sql_end);
             }
         }
         //フラグを終了PJ(STAT=1)に更新
